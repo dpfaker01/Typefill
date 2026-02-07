@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TypeFill">
+    <meta name="application-name" content="TypeFill">
+    <meta name="msapplication-TileColor" content="#4f46e5">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.">
+    <meta name="keywords" content="template, text expander, mail merge, snippet, auto fill, form letter, copy paste, variable, shortcut">
+    <meta name="author" content="TypeFill">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="TypeFill - Create & Reuse Fill-in Templates">
+    <meta property="og:description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.">
+    <meta property="og:image" content="/icons/icon-512x512.png">
+    <meta property="og:url" content="https://typefill.app">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TypeFill - Create & Reuse Fill-in Templates">
+    <meta name="twitter:description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.">
+    <meta name="twitter:image" content="/icons/icon-512x512.png">
+    
+    <title>TypeFill - Create & Reuse Fill-in Templates</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
+    <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#4f46e5">
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        html {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            overscroll-behavior-y: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .dark body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .safe-area-top { padding-top: env(safe-area-inset-top); }
+        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        .safe-area-left { padding-left: env(safe-area-inset-left); }
+        .safe-area-right { padding-right: env(safe-area-inset-right); }
+
+        #editor {
+            outline: none;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            min-height: 300px;
+            font-size: 16px;
+            -webkit-touch-callout: default;
+            user-select: text;
+        }
+
+        .token {
+            background-color: #e0e7ff;
+            color: #4338ca;
+            border-bottom: 2px solid #4f46e5;
+            padding: 0 4px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.2s;
+            word-break: break-all;
+        }
+        
+        .dark .token {
+            background-color: #312e81;
+            color: #c7d2fe;
+            border-bottom-color: #6366f1;
+        }
+        
+        .token:hover { background-color: #c7d2fe; }
+        .dark .token:hover { background-color: #4338ca; }
+
+        #floater {
+            position: absolute;
+            display: none;
+            background: #1e293b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            z-index: 50;
+            animation: popIn 0.15s ease-out;
+            border: none;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .touch-btn {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        ::-webkit-scrollbar { 
+            width: 4px; 
+            height: 4px; 
+        }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 2px; 
+        }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            z-index: 150;
+            opacity: 0;
+            transition: all 0.3s ease;
+            max-width: 90vw;
+            text-align: center;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @media (min-width: 768px) {
+            #editor {
+                font-size: 18px;
+                min-height: 400px;
+            }
+            .mobile-only { display: none; }
+        }
+        
+        @media (max-width: 767px) {
+            .desktop-only { display: none; }
+            aside {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 100;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 85% !important;
+                max-width: 320px;
+            }
+            aside.open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 99;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+            }
+            .sidebar-overlay.open {
+                opacity: 1;
+                pointer-events: all;
+            }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <!-- PWA Install Banner -->
+    <div id="installBanner" class="hidden bg-indigo-600 text-white px-4 py-3 text-center text-sm flex items-center justify-between">
+        <span class="flex-1">Install TypeFill for offline access & better experience</span>
+        <div class="flex gap-2">
+            <button onclick="installPWA()" class="bg-white text-indigo-600 px-4 py-1.5 rounded font-semibold text-xs">Install</button>
+            <button onclick="dismissInstall()" class="text-white opacity-75 px-2">×</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 h-16 flex justify-between items-center px-4 md:px-6 shadow-sm z-20 shrink-0 safe-area-top">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="md:hidden touch-btn flex items-center justify-center -ml-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800">
+                <svg class="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            
+            <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-tight dark:text-white leading-tight">TypeFill</h1>
+                <p class="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Create & Reuse Fill-in Templates</p>
+            </div>
+        </div>
+        
+        <div class="flex gap-2 items-center">
+            <button onclick="toggleTheme()" class="touch-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition" title="Toggle Theme">
+                <svg id="sunIcon" class="w-5 h-5 text-amber-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <svg id="moonIcon" class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            </button>
+            
+            <button onclick="saveCurrentTemplate()" class="hidden md:flex text-sm font-medium text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-md transition border border-indigo-200 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900">
+                Save
+            </button>
+            <button onclick="copyFinalText()" id="copyBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow-md transition flex items-center gap-2 touch-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                <span class="hidden sm:inline">Copy</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay md:hidden" onclick="toggleSidebar()"></div>
+
+    <main class="flex-1 flex overflow-hidden relative">
+        <aside id="sidebar" class="w-72 bg-slate-50 border-r border-gray-200 flex flex-col shrink-0 dark:bg-slate-900 dark:border-slate-700 safe-area-left">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-white gap-2 dark:bg-slate-800 dark:border-slate-700">
+                <button onclick="createFolder()" class="flex-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2 py-2 rounded transition border border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 flex items-center justify-center gap-1 touch-btn">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                    <span>Folder</span>
+                </button>
+                <button onclick="createNew()" class="flex-1 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-2 py-2 rounded transition border border-indigo-100 dark:bg-indigo-900 dark:text-indigo-300 dark:border-indigo-800 flex items-center justify-center gap-1 touch-btn">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Template</span>
+                </button>
+                <button onclick="toggleSidebar()" class="md:hidden touch-btn p-2 text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div id="templateList" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
+
+            <div class="p-3 border-t border-gray-200 bg-white space-y-2 dark:bg-slate-800 dark:border-slate-700 safe-area-bottom">
+                <button onclick="document.getElementById('fileInput').click()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 py-3 rounded transition dark:bg-slate-700 dark:text-slate-300 touch-btn">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Import JSON
+                </button>
+                <button onclick="exportData()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 py-3 rounded transition dark:bg-slate-700 dark:text-slate-300 touch-btn">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export JSON
+                </button>
+            </div>
+        </aside>
+
+        <section class="flex-1 bg-white relative flex flex-col min-w-0 dark:bg-slate-900">
+            <div class="h-12 border-b border-gray-100 flex items-center px-4 gap-4 text-xs text-gray-400 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-500">
+                <span>Status: <span id="statusIndicator" class="text-green-500 font-medium">Ready</span></span>
+                <div class="flex-1"></div>
+                <span class="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded border border-yellow-100 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800 hidden sm:block">
+                    💡 Highlight text to create variables
+                </span>
+                <button onclick="toggleVariablesPanel()" class="md:hidden touch-btn p-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-white cursor-text dark:bg-slate-900" id="editorContainer">
+                <div id="editor" contenteditable="true" class="max-w-3xl mx-auto focus:outline-none text-lg text-gray-700 dark:text-gray-200" spellcheck="false" placeholder="Start typing your template..."></div>
+                <button id="floater" class="touch-btn">✨ Make Variable</button>
+            </div>
+            
+            <div class="md:hidden border-t border-gray-200 bg-white p-3 flex gap-2 dark:bg-slate-800 dark:border-slate-700 safe-area-bottom">
+                <button onclick="saveCurrentTemplate()" class="flex-1 bg-indigo-600 text-white font-medium py-3 rounded-lg touch-btn">
+                    Save Template
+                </button>
+            </div>
+        </section>
+
+        <aside id="variablesPanel" class="hidden md:flex w-80 bg-white border-l border-gray-200 flex-col shrink-0 shadow-xl z-10 dark:bg-slate-800 dark:border-slate-700 absolute md:relative right-0 h-full transform translate-x-full md:translate-x-0 transition-transform duration-300">
+            <div class="p-4 bg-slate-50 border-b border-gray-200 flex justify-between items-center dark:bg-slate-900 dark:border-slate-700">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-700 dark:text-gray-200">Variables</h2>
+                    <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">Replace highlighted text here.</p>
+                </div>
+                <button onclick="toggleVariablesPanel()" class="md:hidden touch-btn p-2">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="variablesContainer" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900 safe-area-bottom"></div>
+        </aside>
+    </main>
+
+    <div id="toast" class="toast"></div>
+    <input type="file" id="fileInput" accept=".json" class="hidden" onchange="handleImport(this)">
+
+    <script>
+        // ==========================================
+        //  TYPEFILL PWA - CORE ARCHITECTURE
+        // ==========================================
+
+        const DB_NAME = 'TypeFillDB';
+        const DB_VERSION = 1;
+        const STORE_TEMPLATES = 'templates';
+        const STORE_FOLDERS = 'folders';
+        const STORE_SETTINGS = 'settings';
+        
+        let db = null;
+        let deferredPrompt = null;
+
+        // Initialize IndexedDB with Persistent Storage
+        async function initDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    console.log('[TypeFill] Database initialized');
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    
+                    if (!database.objectStoreNames.contains(STORE_TEMPLATES)) {
+                        const templateStore = database.createObjectStore(STORE_TEMPLATES, { keyPath: 'id' });
+                        templateStore.createIndex('folderId', 'folderId', { unique: false });
+                        templateStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+                    }
+                    
+                    if (!database.objectStoreNames.contains(STORE_FOLDERS)) {
+                        database.createObjectStore(STORE_FOLDERS, { keyPath: 'id' });
+                    }
+                    
+                    if (!database.objectStoreNames.contains(STORE_SETTINGS)) {
+                        database.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
+                    }
+                };
+            });
+        }
+
+        // Request Persistent Storage for mobile data retention
+        async function requestPersistentStorage() {
+            if (navigator.storage && navigator.storage.persist) {
+                const isPersistent = await navigator.storage.persist();
+                console.log(`[TypeFill] Persistent storage: ${isPersistent}`);
+                
+                if (navigator.storage.estimate) {
+                    const estimate = await navigator.storage.estimate();
+                    const used = (estimate.usage / 1024 / 1024).toFixed(2);
+                    const total = estimate.quota ? (estimate.quota / 1024 / 1024).toFixed(2) : 'unknown';
+                    console.log(`[TypeFill] Storage: ${used}MB / ${total}MB`);
+                }
+                
+                return isPersistent;
+            }
+            return false;
+        }
+
+        // Data Access Layer
+        const DataLayer = {
+            async saveTemplates(templates) {
+                const tx = db.transaction(STORE_TEMPLATES, 'readwrite');
+                const store = tx.objectStore(STORE_TEMPLATES);
+                await store.clear();
+                for (const template of templates) {
+                    await store.put(template);
+                }
+                return new Promise((resolve) => { tx.oncomplete = resolve; });
+            },
+            
+            async getTemplates() {
+                const tx = db.transaction(STORE_TEMPLATES, 'readonly');
+                const store = tx.objectStore(STORE_TEMPLATES);
+                const request = store.getAll();
+                return new Promise((resolve) => {
+                    request.onsuccess = () => resolve(request.result);
+                });
+            },
+            
+            async saveFolders(folders) {
+                const tx = db.transaction(STORE_FOLDERS, 'readwrite');
+                const store = tx.objectStore(STORE_FOLDERS);
+                await store.clear();
+                for (const folder of folders) {
+                    await store.put(folder);
+                }
+                return new Promise((resolve) => { tx.oncomplete = resolve; });
+            },
+            
+            async getFolders() {
+                const tx = db.transaction(STORE_FOLDERS, 'readonly');
+                const store = tx.objectStore(STORE_FOLDERS);
+                const request = store.getAll();
+                return new Promise((resolve) => {
+                    request.onsuccess = () => resolve(request.result);
+                });
+            },
+            
+            async saveSetting(key, value) {
+                const tx = db.transaction(STORE_SETTINGS, 'readwrite');
+                const store = tx.objectStore(STORE_SETTINGS);
+                await store.put({ key, value, timestamp: Date.now() });
+                return new Promise((resolve) => { tx.oncomplete = resolve; });
+            },
+            
+            async getSetting(key) {
+                const tx = db.transaction(STORE_SETTINGS, 'readonly');
+                const store = tx.objectStore(STORE_SETTINGS);
+                const request = store.get(key);
+                return new Promise((resolve) => {
+                    request.onsuccess = () => resolve(request.result?.value);
+                });
+            }
+        };
+
+        // State Management
+        const state = {
+            templates: [],
+            folders: [],
+            currentVariables: [], 
+            currentTemplateId: null,
+            darkMode: false,
+            isMobile: window.innerWidth < 768
+        };
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                showToast('Loading TypeFill...');
+                
+                // Register Service Worker first
+                if ('serviceWorker' in navigator) {
+                    await registerServiceWorker();
+                }
+                
+                await initDatabase();
+                await requestPersistentStorage();
+                await loadTheme();
+                await loadStateFromStorage();
+                
+                if (state.templates.length === 0) {
+                    editor.innerHTML = `Welcome to TypeFill! Create your first template by typing here, then highlight text to make variables.`;
+                } else {
+                    loadTemplateUI(state.templates[0].id);
+                }
+                
+                renderTemplateList();
+                setupInstallPrompt();
+                
+                showToast('TypeFill Ready');
+            } catch (err) {
+                console.error('Initialization error:', err);
+                showToast('Error loading app');
+            }
+        });
+
+        // Service Worker Registration with update handling
+        async function registerServiceWorker() {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('[TypeFill] SW registered:', registration.scope);
+                
+                // Handle updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showToast('Update available! Refresh to update.');
+                        }
+                    });
+                });
+                
+            } catch (err) {
+                console.log('SW registration failed:', err);
+            }
+        }
+
+        // PWA Install Handling
+        function setupInstallPrompt() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show install banner after 3 seconds if not dismissed
+                setTimeout(() => {
+                    const banner = document.getElementById('installBanner');
+                    const dismissed = localStorage.getItem('installBannerDismissed');
+                    if (banner && !dismissed && !window.matchMedia('(display-mode: standalone)').matches) {
+                        banner.classList.remove('hidden');
+                    }
+                }, 3000);
+            });
+            
+            // Check if already installed
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('[TypeFill] Running as installed PWA');
+            }
+        }
+
+        window.installPWA = async function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    showToast('TypeFill installed!');
+                    document.getElementById('installBanner').classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        };
+
+        window.dismissInstall = function() {
+            document.getElementById('installBanner').classList.add('hidden');
+            localStorage.setItem('installBannerDismissed', 'true');
+        };
+
+        // Theme Management
+        async function loadTheme() {
+            const savedTheme = await DataLayer.getSetting('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                enableDarkMode();
+            } else {
+                enableLightMode();
+            }
+        }
+
+        function toggleTheme() {
+            if (state.darkMode) {
+                enableLightMode();
+                DataLayer.saveSetting('theme', 'light');
+            } else {
+                enableDarkMode();
+                DataLayer.saveSetting('theme', 'dark');
+            }
+        }
+
+        function enableDarkMode() {
+            document.documentElement.classList.add('dark');
+            state.darkMode = true;
+            document.getElementById('sunIcon').classList.remove('hidden');
+            document.getElementById('moonIcon').classList.add('hidden');
+        }
+
+        function enableLightMode() {
+            document.documentElement.classList.remove('dark');
+            state.darkMode = false;
+            document.getElementById('sunIcon').classList.add('hidden');
+            document.getElementById('moonIcon').classList.remove('hidden');
+        }
+
+        // Data Persistence
+        async function loadStateFromStorage() {
+            try {
+                const [templates, folders] = await Promise.all([
+                    DataLayer.getTemplates(),
+                    DataLayer.getFolders()
+                ]);
+                
+                state.templates = templates || [];
+                state.folders = folders || [];
+                
+                // Migrate from old localStorage if needed
+                const oldData = localStorage.getItem('template_master_db_v2');
+                if (oldData && state.templates.length === 0) {
+                    const parsed = JSON.parse(oldData);
+                    state.templates = parsed.templates || [];
+                    state.folders = parsed.folders || [];
+                    await persistState();
+                    localStorage.removeItem('template_master_db_v2');
+                    showToast('Data migrated to secure storage');
+                }
+            } catch (err) {
+                console.error('Storage load error:', err);
+            }
+        }
+
+        async function persistState() {
+            try {
+                await Promise.all([
+                    DataLayer.saveTemplates(state.templates),
+                    DataLayer.saveFolders(state.folders)
+                ]);
+            } catch (err) {
+                console.error('Save error:', err);
+                showToast('Failed to save');
+            }
+        }
+
+        // UI Components
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        function toggleVariablesPanel() {
+            const panel = document.getElementById('variablesPanel');
+            panel.classList.toggle('hidden');
+            panel.classList.toggle('translate-x-full');
+        }
+
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+
+        // Folder Management
+        window.createFolder = async function() {
+            const name = prompt("Enter folder name:");
+            if(!name) return;
+            
+            const newFolder = {
+                id: 'folder_' + Date.now(),
+                name: name,
+                createdAt: Date.now()
+            };
+            
+            state.folders.push(newFolder);
+            await persistState();
+            renderTemplateList();
+            showToast(`Folder "${name}" created`);
+        };
+
+        window.deleteFolder = async function(id, e) {
+            e.stopPropagation();
+            if(!confirm("Delete folder? Templates will be uncategorized.")) return;
+            
+            state.folders = state.folders.filter(f => f.id !== id);
+            state.templates.forEach(t => {
+                if(t.folderId === id) delete t.folderId;
+            });
+            
+            await persistState();
+            renderTemplateList();
+            showToast('Folder deleted');
+        };
+
+        window.moveTemplate = async function(templateId, e) {
+            e.stopPropagation();
+            if(state.folders.length === 0) {
+                alert("Create a folder first!");
+                return;
+            }
+
+            let msg = "Select folder:\n\n0: Uncategorized\n";
+            state.folders.forEach((f, idx) => msg += `${idx + 1}: ${f.name}\n`);
+
+            const response = prompt(msg);
+            if(response === null) return;
+            
+            const index = parseInt(response);
+            const template = state.templates.find(t => t.id === templateId);
+            if (!template) return;
+
+            if (index === 0) {
+                delete template.folderId;
+            } else if (index > 0 && index <= state.folders.length) {
+                template.folderId = state.folders[index - 1].id;
+            } else {
+                alert("Invalid selection");
+                return;
+            }
+
+            await persistState();
+            renderTemplateList();
+            showToast('Template moved');
+        };
+
+        // Import/Export
+        window.exportData = async function() {
+            if(state.templates.length === 0) {
+                alert("Nothing to export!");
+                return;
+            }
+            
+            const exportObj = {
+                app: "TypeFill",
+                version: "1.0.0",
+                exportDate: new Date().toISOString(),
+                folders: state.folders,
+                templates: state.templates
+            };
+
+            const dataStr = JSON.stringify(exportObj, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            const date = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `typefill_backup_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast("Exported successfully!");
+        };
+
+        window.handleImport = async function(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    let newTemplates = [];
+                    let newFolders = [];
+
+                    if (Array.isArray(data)) {
+                        newTemplates = data;
+                    } else if (data.templates) {
+                        newTemplates = data.templates;
+                        newFolders = data.folders || [];
+                    } else {
+                        throw new Error("Invalid format");
+                    }
+
+                    if(confirm("OK to OVERWRITE, Cancel to MERGE")) {
+                        state.templates = newTemplates;
+                        state.folders = newFolders;
+                        await finalizeImport("Data overwritten!");
+                    } else {
+                        newFolders.forEach(nf => {
+                            if(!state.folders.find(cf => cf.id === nf.id)) state.folders.push(nf);
+                        });
+                        newTemplates.forEach(nt => {
+                            const idx = state.templates.findIndex(curr => curr.id === nt.id);
+                            if (idx > -1) state.templates[idx] = nt; 
+                            else state.templates.push(nt);
+                        });
+                        await finalizeImport("Data merged!");
+                    }
+                } catch (err) {
+                    alert("Error: " + err.message);
+                }
+                input.value = '';
+            };
+            reader.readAsText(file);
+        };
+
+        async function finalizeImport(msg) {
+            await persistState();
+            renderTemplateList();
+            if(state.templates.length > 0) loadTemplateUI(state.templates[0].id);
+            showToast(msg);
+        }
+
+        // Core Editor Logic
+        const editor = document.getElementById('editor');
+        const floater = document.getElementById('floater');
+        const varContainer = document.getElementById('variablesContainer');
+        const templateList = document.getElementById('templateList');
+        const statusInd = document.getElementById('statusIndicator');
+
+        editor.addEventListener('mouseup', handleSelection);
+        editor.addEventListener('keyup', handleSelection);
+
+        let touchTimer = null;
+        editor.addEventListener('touchend', () => {
+            clearTimeout(touchTimer);
+            touchTimer = setTimeout(handleSelection, 300);
+        });
+
+        function handleSelection() {
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
+
+            if (text.length > 0 && !selection.isCollapsed && editor.contains(selection.anchorNode)) {
+                if (selection.anchorNode.parentNode.classList.contains('token') || 
+                    selection.focusNode.parentNode.classList.contains('token')) {
+                    floater.style.display = 'none';
+                    return;
+                }
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                const isMobile = window.innerWidth < 768;
+                const floaterWidth = isMobile ? 140 : 120;
+                
+                let left = rect.left + (rect.width / 2) - (floaterWidth / 2);
+                let top = rect.top + window.scrollY - (isMobile ? 55 : 45);
+                
+                if (left < 10) left = 10;
+                if (left + floaterWidth > window.innerWidth) left = window.innerWidth - floaterWidth - 10;
+                
+                floater.style.display = 'block';
+                floater.style.top = `${top}px`;
+                floater.style.left = `${left}px`;
+
+                floater.onclick = (e) => {
+                    e.stopPropagation();
+                    createVariable(text);
+                    floater.style.display = 'none';
+                    window.getSelection().removeAllRanges();
+                };
+            } else {
+                floater.style.display = 'none';
+            }
+        }
+
+        function createVariable(selectedText) {
+            const varId = 'var_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            safeGlobalReplace(selectedText, varId);
+            state.currentVariables.push({ id: varId, label: selectedText, value: selectedText });
+            renderSidebar();
+        }
+
+        function safeGlobalReplace(searchText, varId) {
+            const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+            const nodesToReplace = [];
+            while (walker.nextNode()) {
+                const node = walker.currentNode;
+                if (node.nodeValue.includes(searchText) && !node.parentElement.classList.contains('token')) {
+                    nodesToReplace.push(node);
+                }
+            }
+            nodesToReplace.forEach(node => {
+                const fragment = document.createDocumentFragment();
+                const parts = node.nodeValue.split(searchText);
+                parts.forEach((part, index) => {
+                    fragment.appendChild(document.createTextNode(part));
+                    if (index < parts.length - 1) {
+                        const span = document.createElement('span');
+                        span.className = 'token';
+                        span.dataset.id = varId;
+                        span.textContent = searchText;
+                        fragment.appendChild(span);
+                    }
+                });
+                node.parentNode.replaceChild(fragment, node);
+            });
+        }
+
+        function renderSidebar() {
+            varContainer.innerHTML = '';
+            if (state.currentVariables.length === 0) {
+                varContainer.innerHTML = `
+                    <div class="text-center mt-12 text-gray-400 dark:text-gray-500">
+                        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                        </svg>
+                        <p class="text-sm">Highlight text to create variables</p>
+                    </div>`;
+                return;
+            }
+            state.currentVariables.forEach(v => {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-3 rounded shadow-sm border border-gray-200 dark:bg-slate-800 dark:border-slate-700';
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-bold text-gray-500 uppercase truncate dark:text-gray-400" title="${v.label}">${v.label}</label>
+                        <button onclick="deleteVariable('${v.id}')" class="text-xs text-red-400 hover:text-red-600 touch-btn p-1">Unlink</button>
+                    </div>
+                    <input type="text" value="${v.value}" oninput="updateVariable('${v.id}', this.value)" 
+                        class="w-full bg-indigo-50 border border-indigo-200 text-gray-800 text-sm rounded px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                        placeholder="Replacement...">
+                `;
+                varContainer.appendChild(div);
+            });
+        }
+
+        window.updateVariable = function(id, newValue) {
+            const tokens = editor.querySelectorAll(`.token[data-id="${id}"]`);
+            tokens.forEach(t => t.textContent = newValue);
+            const v = state.currentVariables.find(x => x.id === id);
+            if(v) v.value = newValue;
+        };
+
+        window.deleteVariable = function(id) {
+            const tokens = editor.querySelectorAll(`.token[data-id="${id}"]`);
+            tokens.forEach(t => {
+                const text = document.createTextNode(t.textContent);
+                t.parentNode.replaceChild(text, t);
+            });
+            state.currentVariables = state.currentVariables.filter(x => x.id !== id);
+            renderSidebar();
+        };
+
+        // Template Management
+        window.saveCurrentTemplate = async function() {
+            let name = "New Template";
+            const currentT = state.templates.find(t => t.id === state.currentTemplateId);
+            if(currentT) name = currentT.name;
+
+            name = prompt("Template Name:", name);
+            if (!name) return;
+
+            const template = {
+                id: state.currentTemplateId || Date.now().toString(),
+                name: name,
+                html: editor.innerHTML,
+                variables: state.currentVariables,
+                folderId: currentT ? currentT.folderId : undefined,
+                updatedAt: Date.now()
+            };
+
+            const existingIndex = state.templates.findIndex(t => t.id === template.id);
+            if (existingIndex >= 0) {
+                state.templates[existingIndex] = template;
+            } else {
+                state.templates.push(template);
+            }
+
+            state.currentTemplateId = template.id;
+            await persistState();
+            renderTemplateList();
+            showToast("Saved!");
+            
+            if (window.innerWidth < 768) toggleSidebar();
+        };
+
+        window.createNew = async function() {
+            if(state.currentVariables.length > 0 && !confirm("Clear current work?")) return;
+            editor.innerHTML = "";
+            state.currentVariables = [];
+            state.currentTemplateId = null;
+            renderSidebar();
+            renderTemplateList();
+            editor.focus();
+        };
+
+        window.loadTemplateUI = function(id) {
+            const t = state.templates.find(x => x.id === id);
+            if (!t) return;
+            state.currentTemplateId = t.id;
+            editor.innerHTML = t.html;
+            state.currentVariables = t.variables || [];
+            renderSidebar();
+            renderTemplateList();
+        };
+
+        window.removeTemplate = async function(id, e) {
+            e.stopPropagation();
+            if(!confirm("Delete this template?")) return;
+            state.templates = state.templates.filter(t => t.id !== id);
+            await persistState();
+            if(state.currentTemplateId === id) createNew();
+            else renderTemplateList();
+        };
+
+        function renderTemplateList() {
+            templateList.innerHTML = '';
+            
+            state.folders.forEach(folder => {
+                const folderTemplates = state.templates.filter(t => t.folderId === folder.id);
+                if (folderTemplates.length === 0) return;
+                
+                const details = document.createElement('details');
+                details.open = true;
+                details.className = "group mb-2";
+
+                const summary = document.createElement('summary');
+                summary.className = "flex items-center justify-between text-xs font-bold text-gray-500 uppercase tracking-wider p-2 hover:bg-slate-100 rounded cursor-pointer select-none dark:text-gray-400 dark:hover:bg-slate-800";
+                summary.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <svg class="arrow w-3 h-3 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        <span>${folder.name} <span class="text-gray-300 font-normal">(${folderTemplates.length})</span></span>
+                    </div>
+                    <button onclick="deleteFolder('${folder.id}', event)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                `;
+                
+                const listDiv = document.createElement('div');
+                listDiv.className = "pl-2 border-l border-slate-200 ml-3 mt-1 space-y-1 dark:border-slate-700";
+                folderTemplates.forEach(t => listDiv.appendChild(createTemplateItem(t)));
+                
+                details.appendChild(summary);
+                details.appendChild(listDiv);
+                templateList.appendChild(details);
+            });
+
+            const uncategorized = state.templates.filter(t => !t.folderId);
+            if(uncategorized.length > 0) {
+                const div = document.createElement('div');
+                div.innerHTML = `<div class="px-2 py-1 mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider dark:text-gray-500">Uncategorized</div>`;
+                const listDiv = document.createElement('div');
+                listDiv.className = "space-y-1";
+                uncategorized.forEach(t => listDiv.appendChild(createTemplateItem(t)));
+                div.appendChild(listDiv);
+                templateList.appendChild(div);
+            }
+            
+            if (state.templates.length === 0) {
+                templateList.innerHTML = `
+                    <div class="text-center mt-8 text-gray-400 dark:text-gray-500 p-4">
+                        <p class="text-sm mb-2">No templates yet</p>
+                        <p class="text-xs opacity-75">Create your first template</p>
+                    </div>
+                `;
+            }
+        }
+
+        function createTemplateItem(t) {
+            const isActive = state.currentTemplateId === t.id;
+            const div = document.createElement('div');
+            div.className = `group flex justify-between items-center p-2 rounded cursor-pointer transition select-none touch-btn ${isActive ? 'bg-indigo-100 text-indigo-900 border border-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:border-indigo-800' : 'hover:bg-slate-100 text-slate-600 dark:hover:bg-slate-800 dark:text-slate-300'}`;
+            div.onclick = () => {
+                loadTemplateUI(t.id);
+                if (window.innerWidth < 768) toggleSidebar();
+            };
+            div.innerHTML = `
+                <span class="flex-1 truncate text-sm font-medium">${t.name}</span>
+                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="moveTemplate('${t.id}', event)" title="Move" class="text-xs text-slate-400 hover:text-indigo-600 px-1 py-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" /></svg>
+                    </button>
+                    <button onclick="removeTemplate('${t.id}', event)" title="Delete" class="text-xs text-slate-400 hover:text-red-600 px-1 py-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+            `;
+            return div;
+        }
+
+        window.copyFinalText = function() {
+            const btn = document.getElementById('copyBtn');
+            const originalHTML = btn.innerHTML;
+            const cleanText = editor.innerText;
+            navigator.clipboard.writeText(cleanText).then(() => {
+                btn.innerHTML = `<span class="font-bold">✓</span>`;
+                btn.classList.remove('bg-indigo-600');
+                btn.classList.add('bg-green-600');
+                showToast("Copied to clipboard!");
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.add('bg-indigo-600');
+                    btn.classList.remove('bg-green-600');
+                }, 2000);
+            });
+        };
+
+        function showStatus(msg) {
+            const original = statusInd.innerText;
+            statusInd.innerText = msg;
+            setTimeout(() => statusInd.innerText = "Ready", 3000);
+        }
+    </script>
+</body>
+</html>
