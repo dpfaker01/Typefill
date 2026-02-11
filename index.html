@@ -520,19 +520,14 @@
             }
         });
 
-        // Service Worker Registration with update handling
+        // Fix: Relative path for service worker
         async function registerServiceWorker() {
             try {
-                const registration = await navigator.serviceWorker.register('/sw.js');
+                const registration = await navigator.serviceWorker.register('sw.js');
                 console.log('[TypeFill] SW registered:', registration.scope);
-                
-                // Handle updates
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            showToast('Update available! Refresh to update.');
-                        }
+            } catch (err) {
+                console.log('SW registration failed:', err);
+            }
                     });
                 });
                 
@@ -1109,3 +1104,4 @@
     </script>
 </body>
 </html>
+
