@@ -1,65 +1,54 @@
 {
-  "name": "TypeFill - Smart Templates",
+  "name": "TypeFill - Create & Reuse Fill-in Templates",
   "short_name": "TypeFill",
-  "description": "Create smart templates with variables. Stop retyping the same emails and messages.",
+  "description": "Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0f172a",
+  "background_color": "#ffffff",
   "theme_color": "#4f46e5",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "scope": "./",
-  "id": "typefill-pwa",
-  "categories": ["productivity", "utilities"],
   "lang": "en",
-  "dir": "ltr",
   "icons": [
     {
       "src": "./icons/icon-16x16.png",
       "sizes": "16x16",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
       "src": "./icons/icon-32x32.png",
       "sizes": "32x32",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
       "src": "./icons/icon-72x72.png",
       "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "./icons/icon-96x96.png",
       "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "./icons/icon-128x128.png",
       "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "./icons/icon-144x144.png",
       "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "./icons/icon-152x152.png",
       "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "./icons/icon-180x180.png",
       "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "./icons/icon-192x192.png",
@@ -70,8 +59,7 @@
     {
       "src": "./icons/icon-384x384.png",
       "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "./icons/icon-512x512.png",
@@ -80,18 +68,19 @@
       "purpose": "any maskable"
     }
   ],
+  "categories": ["productivity", "utilities", "business"],
   "screenshots": [
     {
-      "src": "./screenshots/mobile.png",
+      "src": "./screenshots/screen1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "./screenshots/screen2.png",
       "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow"
-    },
-    {
-      "src": "./screenshots/desktop.png",
-      "sizes": "1280x800",
-      "type": "image/png",
-      "form_factor": "wide"
     }
   ],
   "shortcuts": [
@@ -104,8 +93,5 @@
     }
   ],
   "related_applications": [],
-  "prefer_related_applications": false,
-  "edge_side_panel": {
-    "preferred_width": 400
-  }
+  "prefer_related_applications": false
 }
