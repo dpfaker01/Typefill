@@ -1226,7 +1226,7 @@
                 if (folderTemplates.length === 0) return;
                 
                 const details = document.createElement('details');
-                details.open = true;
+                details.open = false; // CHANGED: Default to collapsed
                 details.className = "group mb-2";
 
                 const summary = document.createElement('summary');
