@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- CRITICAL: Native app viewport settings - no zoom, no scaling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <!-- Theme colors for status bar -->
+    <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+
+    <!-- iOS Native App Configuration -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TypeFill">
+
+    <!-- PWA -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="TypeFill">
+
+    <!-- SEO -->
+    <meta name="description" content="Create smart templates with variables. Stop retyping the same emails and messages.">
+    <meta name="keywords" content="template, text expander, snippet, auto fill, variables">
+
+    <title>TypeFill - Smart Templates</title>
+
+    <!-- Icons -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+
+    <style>
+        /* CSS Variables matching CashTrail's dark-first approach */
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #6366f1;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --border-subtle: #475569;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 0.75rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-subtle: #cbd5e1;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* CRITICAL: Prevent all touch actions that feel like browser */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+        }
+
+        html {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 16px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100%;
+            transition: background 0.3s, color 0.3s;
+            /* Prevent text selection like native apps */
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            touch-action: pan-y;
+            background: var(--bg-primary);
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            width: 100%;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 481px) {
+            #app {
+                border-left: 1px solid var(--border-subtle);
+                border-right: 1px solid var(--border-subtle);
+            }
+        }
+
+        /* Header - Fixed like CashTrail */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            min-height: 60px;
+        }
+
+        [data-theme="light"] .app-header {
+            background: rgba(248, 250, 252, 0.95);
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            -webkit-text-fill-color: white;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Main Content - Scrollable area */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: var(--spacing-md);
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+        }
+
+        /* Template Cards - Matching CashTrail withdrawal cards */
+        .template-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .template-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .template-card:active {
+            transform: scale(0.98);
+        }
+
+        .template-header {
+            padding: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .template-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: var(--spacing-md);
+        }
+
+        .template-info {
+            flex: 1;
+        }
+
+        .template-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .template-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .template-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .action-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-danger);
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-action {
+            font-size: 0.875rem;
+            color: var(--accent-primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.5;
+        }
+
+        /* Floating Action Button - Matching CashTrail */
+        .fab-container {
+            position: fixed;
+            bottom: var(--spacing-lg);
+            right: var(--spacing-lg);
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            align-items: flex-end;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+        }
+
+        .fab-menu {
+            display: none;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .fab-menu.open {
+            display: flex;
+            animation: slideUp 0.2s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fab-option {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            background: var(--bg-secondary);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s;
+        }
+
+        .fab-option:active {
+            transform: scale(0.95);
+        }
+
+        .fab-option-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .fab-option.new .fab-option-icon { background: var(--accent-success); }
+        .fab-option.folder .fab-option-icon { background: var(--accent-warning); }
+
+        /* Modal System - Matching CashTrail's bottom sheet */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-sheet {
+            background: var(--bg-secondary);
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .modal-sheet {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: var(--spacing-md);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .form-textarea {
+            min-height: 200px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-hint {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+        }
+
+        .btn {
+            width: 100%;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-danger);
+            border: 1px solid var(--accent-danger);
+        }
+
+        /* Editor Specific Styles */
+        .editor-container {
+            position: relative;
+            background: var(--bg-primary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            min-height: 300px;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .toolbar-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .editor {
+            padding: var(--spacing-md);
+            min-height: 250px;
+            outline: none;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            /* Allow text selection in editor only */
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .editor:empty:before {
+            content: attr(placeholder);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        /* Variable Tokens */
+        .token {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            border-bottom: 2px solid var(--accent-primary);
+            padding: 0 4px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: inline;
+            cursor: pointer;
+        }
+
+        [data-theme="light"] .token {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+        }
+
+        /* Variable List in Sidebar */
+        .variable-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .variable-item {
+            background: var(--bg-primary);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .variable-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .variable-label {
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .variable-input {
+            width: 100%;
+            padding: var(--spacing-sm);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        /* Search */
+        .search-container {
+            position: relative;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 2.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        /* Settings Options */
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: var(--bg-primary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .settings-info {
+            flex: 1;
+        }
+
+        .settings-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .settings-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            background: var(--bg-tertiary);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .toggle.active {
+            background: var(--accent-primary);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle.active .toggle-slider {
+            transform: translateX(24px);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 300;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-icon">✏️</div>
+                TypeFill
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="btnTheme" title="Toggle Theme">🌙</button>
+                <button class="icon-btn" id="btnSearch" title="Search">🔍</button>
+                <button class="icon-btn" id="btnSettings" title="Settings">⚙️</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Templates Section -->
+            <div class="section-header">
+                <h2 class="section-title">My Templates</h2>
+                <button class="section-action" id="btnViewAll">View All</button>
+            </div>
+
+            <div id="templatesContainer" class="template-list">
+                <!-- Dynamic content -->
+            </div>
+
+            <div style="height: 100px;"></div>
+        </main>
+
+        <!-- Floating Action Button -->
+        <div class="fab-container">
+            <div class="fab-menu" id="fabMenu">
+                <div class="fab-option new" onclick="app.openModal('template')">
+                    <div class="fab-option-icon">📝</div>
+                    <span>New Template</span>
+                </div>
+                <div class="fab-option folder" onclick="app.createFolder()">
+                    <div class="fab-option-icon">📁</div>
+                    <span>New Folder</span>
+                </div>
+            </div>
+            <button class="fab" id="fabMain">+</button>
+        </div>
+
+        <!-- Modal: Template Editor -->
+        <div class="modal-overlay" id="modalTemplate">
+            <div class="modal-sheet">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="templateModalTitle">New Template</h3>
+                    <button class="modal-close" onclick="app.closeModal('template')">×</button>
+                </div>
+                <div class="modal-content">
+                    <form id="templateForm" onsubmit="app.handleTemplateSubmit(event)">
+                        <input type="hidden" id="templateEditId">
+
+                        <div class="form-group">
+                            <label class="form-label">Template Name</label>
+                            <input type="text" class="form-input" id="templateName" required placeholder="e.g., Meeting Follow-up">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Content</label>
+                            <div class="editor-container">
+                                <div class="editor-toolbar">
+                                    <button type="button" class="toolbar-btn" onclick="app.insertVariable()">✨ Add Variable</button>
+                                    <button type="button" class="toolbar-btn" onclick="app.formatText('bold')">Bold</button>
+                                    <button type="button" class="toolbar-btn" onclick="app.formatText('italic')">Italic</button>
+                                </div>
+                                <div id="editor" class="editor" contenteditable="true" placeholder="Type your template here... Highlight text to make it a variable."></div>
+                            </div>
+                            <div class="form-hint">Highlight any text to convert it to a fillable variable</div>
+                        </div>
+
+                        <div class="form-group" id="variablesSection" style="display: none;">
+                            <label class="form-label">Variables</label>
+                            <div id="variablesList" class="variable-list"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Folder (Optional)</label>
+                            <select class="form-select" id="templateFolder">
+                                <option value="">No Folder</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="templateSubmitBtn">Save Template</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Use Template (Fill Variables) -->
+        <div class="modal-overlay" id="modalFill">
+            <div class="modal-sheet">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="fillModalTitle">Fill Template</h3>
+                    <button class="modal-close" onclick="app.closeModal('fill')">×</button>
+                </div>
+                <div class="modal-content">
+                    <div id="fillVariablesContainer" class="variable-list"></div>
+
+                    <div class="form-group">
+                        <label class="form-label">Preview</label>
+                        <div id="fillPreview" class="form-textarea" style="min-height: 150px; background: var(--bg-primary);" readonly></div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="app.copyFilledTemplate()">
+                        📋 Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Search -->
+        <div class="modal-overlay" id="modalSearch">
+            <div class="modal-sheet" style="max-height: 95vh;">
+                <div class="modal-header">
+                    <h3 class="modal-title">Search Templates</h3>
+                    <button class="modal-close" onclick="app.closeModal('search')">×</button>
+                </div>
+                <div class="modal-content">
+                    <div class="search-container">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search templates..." oninput="app.handleSearch(this.value)">
+                    </div>
+                    <div id="searchResults" class="template-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Settings -->
+        <div class="modal-overlay" id="modalSettings">
+            <div class="modal-sheet">
+                <div class="modal-header">
+                    <h3 class="modal-title">Settings</h3>
+                    <button class="modal-close" onclick="app.closeModal('settings')">×</button>
+                </div>
+                <div class="modal-content">
+                    <div class="settings-list">
+                        <div class="settings-item">
+                            <div class="settings-info">
+                                <div class="settings-label">Dark Mode</div>
+                                <div class="settings-desc">Toggle between light and dark theme</div>
+                            </div>
+                            <div class="toggle" id="themeToggle" onclick="app.toggleTheme()">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: var(--spacing-lg);">
+                            <label class="form-label">Data Management</label>
+                            <button type="button" class="btn btn-secondary" onclick="app.exportData()">📥 Export Data</button>
+                            <div style="margin-top: var(--spacing-sm);">
+                                <button type="button" class="btn btn-secondary" onclick="app.importData()">📤 Import Data</button>
+                            </div>
+                            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="app.handleImport(this)">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Danger Zone</label>
+                            <button type="button" class="btn btn-danger" onclick="app.clearAllData()">🗑️ Clear All Data</button>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <div class="form-hint">TypeFill v1.0.0</div>
+                            <div class="form-hint">Built with ❤️ for productivity</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: All Templates -->
+        <div class="modal-overlay" id="modalAllTemplates">
+            <div class="modal-sheet" style="max-height: 95vh;">
+                <div class="modal-header">
+                    <h3 class="modal-title">All Templates</h3>
+                    <button class="modal-close" onclick="app.closeModal('allTemplates')">×</button>
+                </div>
+                <div class="modal-content">
+                    <div id="allTemplatesList" class="template-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // ==========================================
+        // TYPEFILL - NATIVE APP IMPLEMENTATION
+        // Matching CashTrail's native behavior
+        // ==========================================
+
+        // CRITICAL: Prevent zoom on double-tap (exactly like CashTrail)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+
+        // Prevent pinch zoom
+        document.addEventListener('touchmove', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Prevent double-tap zoom on buttons
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        class TypeFillApp {
+            constructor() {
+                this.state = {
+                    templates: [],
+                    folders: [],
+                    theme: 'dark',
+                    currentTemplate: null,
+                    variables: []
+                };
+                this.db = null;
+                this.init();
+            }
+
+            async init() {
+                await this.initDB();
+                this.loadState();
+                this.applyTheme();
+                this.bindEvents();
+                this.render();
+            }
+
+            initDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open('TypeFillDB', 1);
+
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        this.db = request.result;
+                        resolve();
+                    };
+
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains('templates')) {
+                            db.createObjectStore('templates', { keyPath: 'id' });
+                        }
+                        if (!db.objectStoreNames.contains('folders')) {
+                            db.createObjectStore('folders', { keyPath: 'id' });
+                        }
+                        if (!db.objectStoreNames.contains('settings')) {
+                            db.createObjectStore('settings', { keyPath: 'key' });
+                        }
+                    };
+                });
+            }
+
+            async loadState() {
+                try {
+                    // Load from IndexedDB
+                    const tx = this.db.transaction(['templates', 'folders', 'settings'], 'readonly');
+
+                    const templatesStore = tx.objectStore('templates');
+                    const foldersStore = tx.objectStore('folders');
+                    const settingsStore = tx.objectStore('settings');
+
+                    this.state.templates = await new Promise((resolve) => {
+                        const req = templatesStore.getAll();
+                        req.onsuccess = () => resolve(req.result);
+                    });
+
+                    this.state.folders = await new Promise((resolve) => {
+                        const req = foldersStore.getAll();
+                        req.onsuccess = () => resolve(req.result);
+                    });
+
+                    const themeSetting = await new Promise((resolve) => {
+                        const req = settingsStore.get('theme');
+                        req.onsuccess = () => resolve(req.result);
+                    });
+
+                    if (themeSetting) {
+                        this.state.theme = themeSetting.value;
+                    }
+
+                    // Fallback to localStorage for backward compatibility
+                    if (this.state.templates.length === 0) {
+                        const saved = localStorage.getItem('typefill_state');
+                        if (saved) {
+                            const parsed = JSON.parse(saved);
+                            this.state.templates = parsed.templates || [];
+                            this.state.folders = parsed.folders || [];
+                            this.state.theme = parsed.theme || 'dark';
+                            await this.persistState();
+                            localStorage.removeItem('typefill_state');
+                        }
+                    }
+                } catch (e) {
+                    console.error('State load failed:', e);
+                }
+            }
+
+            async persistState() {
+                try {
+                    const tx = this.db.transaction(['templates', 'folders', 'settings'], 'readwrite');
+
+                    const templatesStore = tx.objectStore('templates');
+                    await templatesStore.clear();
+                    this.state.templates.forEach(t => templatesStore.put(t));
+
+                    const foldersStore = tx.objectStore('folders');
+                    await foldersStore.clear();
+                    this.state.folders.forEach(f => foldersStore.put(f));
+
+                    const settingsStore = tx.objectStore('settings');
+                    settingsStore.put({ key: 'theme', value: this.state.theme });
+                } catch (e) {
+                    console.error('State save failed:', e);
+                    // Fallback
+                    localStorage.setItem('typefill_state', JSON.stringify(this.state));
+                }
+            }
+
+            applyTheme() {
+                const isDark = this.state.theme === 'dark';
+                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+                const btnTheme = document.getElementById('btnTheme');
+                if (btnTheme) btnTheme.textContent = isDark ? '🌙' : '☀️';
+
+                const toggle = document.getElementById('themeToggle');
+                if (toggle) {
+                    if (isDark) {
+                        toggle.classList.add('active');
+                    } else {
+                        toggle.classList.remove('active');
+                    }
+                }
+            }
+
+            toggleTheme() {
+                this.state.theme = this.state.theme === 'dark' ? 'light' : 'dark';
+                this.applyTheme();
+                this.persistState();
+            }
+
+            bindEvents() {
+                const self = this;
+
+                // FAB Toggle - Exactly like CashTrail
+                const fab = document.getElementById('fabMain');
+                const menu = document.getElementById('fabMenu');
+
+                fab.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    menu.classList.toggle('open');
+                    fab.textContent = menu.classList.contains('open') ? '×' : '+';
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.fab-container')) {
+                        menu.classList.remove('open');
+                        fab.textContent = '+';
+                    }
+                });
+
+                // Modal close on overlay click
+                document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+                    overlay.addEventListener('click', function(e) {
+                        if (e.target === overlay) {
+                            const modalType = overlay.id.replace('modal', '').toLowerCase();
+                            self.closeModal(modalType);
+                        }
+                    });
+                });
+
+                // Header buttons
+                document.getElementById('btnTheme').addEventListener('click', () => this.toggleTheme());
+                document.getElementById('btnSearch').addEventListener('click', () => this.openModal('search'));
+                document.getElementById('btnSettings').addEventListener('click', () => this.openModal('settings'));
+                document.getElementById('btnViewAll').addEventListener('click', () => {
+                    this.renderAllTemplates();
+                    this.openModal('allTemplates');
+                });
+
+                // Editor selection handling for variables
+                const editor = document.getElementById('editor');
+                editor.addEventListener('mouseup', () => this.handleSelection());
+                editor.addEventListener('keyup', () => this.handleSelection());
+
+                // Touch handling for mobile
+                let touchTimer = null;
+                editor.addEventListener('touchend', () => {
+                    clearTimeout(touchTimer);
+                    touchTimer = setTimeout(() => this.handleSelection(), 300);
+                });
+            }
+
+            openModal(type) {
+                const modalMap = {
+                    'template': 'modalTemplate',
+                    'fill': 'modalFill',
+                    'search': 'modalSearch',
+                    'settings': 'modalSettings',
+                    'allTemplates': 'modalAllTemplates'
+                };
+
+                const modalId = modalMap[type];
+                const modal = document.getElementById(modalId);
+
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+
+                    if (type === 'template') {
+                        this.populateFolderSelect();
+                    }
+                }
+            }
+
+            closeModal(type) {
+                const modalMap = {
+                    'template': 'modalTemplate',
+                    'fill': 'modalFill',
+                    'search': 'modalSearch',
+                    'settings': 'modalSettings',
+                    'allTemplates': 'modalAllTemplates'
+                };
+
+                const modalId = modalMap[type];
+                const modal = document.getElementById(modalId);
+
+                if (modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+
+                    if (type === 'template') {
+                        this.resetTemplateForm();
+                    }
+                }
+
+                document.getElementById('fabMenu').classList.remove('open');
+                document.getElementById('fabMain').textContent = '+';
+            }
+
+            resetTemplateForm() {
+                document.getElementById('templateForm').reset();
+                document.getElementById('templateEditId').value = '';
+                document.getElementById('editor').innerHTML = '';
+                document.getElementById('templateModalTitle').textContent = 'New Template';
+                this.state.variables = [];
+                this.renderVariablesList();
+            }
+
+            handleSelection() {
+                const selection = window.getSelection();
+                const text = selection.toString().trim();
+
+                if (text.length > 0 && !selection.isCollapsed) {
+                    // Create variable from selection
+                    this.createVariable(text, selection);
+                }
+            }
+
+            createVariable(text, selection) {
+                const varId = 'var_' + Date.now();
+
+                // Replace selected text with token
+                const range = selection.getRangeAt(0);
+                const token = document.createElement('span');
+                token.className = 'token';
+                token.dataset.id = varId;
+                token.textContent = text;
+                token.contentEditable = 'false';
+
+                range.deleteContents();
+                range.insertNode(token);
+
+                // Add to variables
+                this.state.variables.push({
+                    id: varId,
+                    name: text,
+                    defaultValue: text
+                });
+
+                this.renderVariablesList();
+                selection.removeAllRanges();
+
+                this.showToast('Variable created: ' + text);
+            }
+
+            insertVariable() {
+                const name = prompt('Enter variable name:');
+                if (!name) return;
+
+                const editor = document.getElementById('editor');
+                const varId = 'var_' + Date.now();
+
+                const token = document.createElement('span');
+                token.className = 'token';
+                token.dataset.id = varId;
+                token.textContent = name;
+                token.contentEditable = 'false';
+
+                editor.appendChild(token);
+                editor.appendChild(document.createTextNode(' '));
+
+                this.state.variables.push({
+                    id: varId,
+                    name: name,
+                    defaultValue: ''
+                });
+
+                this.renderVariablesList();
+            }
+
+            renderVariablesList() {
+                const container = document.getElementById('variablesList');
+                const section = document.getElementById('variablesSection');
+
+                if (this.state.variables.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+
+                container.innerHTML = this.state.variables.map(v => `
+                    <div class="variable-item">
+                        <div class="variable-header">
+                            <span class="variable-label">${v.name}</span>
+                            <button type="button" class="action-btn delete" onclick="app.removeVariable('${v.id}')">×</button>
+                        </div>
+                        <input type="text" class="variable-input" value="${v.defaultValue}" 
+                               onchange="app.updateVariableDefault('${v.id}', this.value)" 
+                               placeholder="Default value...">
+                    </div>
+                `).join('');
+            }
+
+            removeVariable(varId) {
+                // Remove from DOM
+                const tokens = document.querySelectorAll(`.token[data-id="${varId}"]`);
+                tokens.forEach(token => {
+                    const text = document.createTextNode(token.textContent);
+                    token.parentNode.replaceChild(text, token);
+                });
+
+                // Remove from state
+                this.state.variables = this.state.variables.filter(v => v.id !== varId);
+                this.renderVariablesList();
+            }
+
+            updateVariableDefault(varId, value) {
+                const v = this.state.variables.find(v => v.id === varId);
+                if (v) v.defaultValue = value;
+            }
+
+            formatText(command) {
+                document.execCommand(command, false, null);
+                document.getElementById('editor').focus();
+            }
+
+            async handleTemplateSubmit(e) {
+                e.preventDefault();
+
+                const editId = document.getElementById('templateEditId').value;
+                const name = document.getElementById('templateName').value;
+                const folderId = document.getElementById('templateFolder').value;
+                const editor = document.getElementById('editor');
+
+                const template = {
+                    id: editId || 'tpl_' + Date.now(),
+                    name: name,
+                    html: editor.innerHTML,
+                    text: editor.innerText,
+                    variables: [...this.state.variables],
+                    folderId: folderId || null,
+                    updatedAt: Date.now()
+                };
+
+                if (editId) {
+                    const idx = this.state.templates.findIndex(t => t.id === editId);
+                    if (idx > -1) this.state.templates[idx] = template;
+                } else {
+                    this.state.templates.unshift(template);
+                }
+
+                await this.persistState();
+                this.render();
+                this.closeModal('template');
+                this.showToast(editId ? 'Template updated' : 'Template created');
+            }
+
+            populateFolderSelect() {
+                const select = document.getElementById('templateFolder');
+                select.innerHTML = '<option value="">No Folder</option>';
+                this.state.folders.forEach(f => {
+                    select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+                });
+            }
+
+            useTemplate(templateId) {
+                const template = this.state.templates.find(t => t.id === templateId);
+                if (!template) return;
+
+                this.state.currentTemplate = template;
+                document.getElementById('fillModalTitle').textContent = template.name;
+
+                const container = document.getElementById('fillVariablesContainer');
+
+                if (template.variables.length === 0) {
+                    container.innerHTML = '<div class="form-hint">No variables in this template</div>';
+                } else {
+                    container.innerHTML = template.variables.map(v => `
+                        <div class="variable-item">
+                            <label class="form-label">${v.name}</label>
+                            <input type="text" class="form-input fill-var-input" 
+                                   data-var-id="${v.id}" 
+                                   value="${v.defaultValue || ''}" 
+                                   placeholder="Enter value..."
+                                   oninput="app.updatePreview()">
+                        </div>
+                    `).join('');
+                }
+
+                this.updatePreview();
+                this.openModal('fill');
+            }
+
+            updatePreview() {
+                if (!this.state.currentTemplate) return;
+
+                let html = this.state.currentTemplate.html;
+
+                const inputs = document.querySelectorAll('.fill-var-input');
+                inputs.forEach(input => {
+                    const varId = input.dataset.varId;
+                    const value = input.value;
+                    const regex = new RegExp(`<span[^>]*data-id="${varId}"[^>]*>[^<]*</span>`, 'g');
+                    html = html.replace(regex, value);
+                });
+
+                // Strip remaining HTML tags for clean text
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                document.getElementById('fillPreview').textContent = temp.textContent;
+            }
+
+            copyFilledTemplate() {
+                const preview = document.getElementById('fillPreview');
+                const text = preview.textContent;
+
+                navigator.clipboard.writeText(text).then(() => {
+                    this.showToast('Copied to clipboard!');
+                    this.closeModal('fill');
+                }).catch(() => {
+                    this.showToast('Failed to copy');
+                });
+            }
+
+            editTemplate(templateId, e) {
+                if (e) e.stopPropagation();
+
+                const template = this.state.templates.find(t => t.id === templateId);
+                if (!template) return;
+
+                document.getElementById('templateEditId').value = templateId;
+                document.getElementById('templateName').value = template.name;
+                document.getElementById('editor').innerHTML = template.html;
+                document.getElementById('templateModalTitle').textContent = 'Edit Template';
+
+                this.state.variables = template.variables ? [...template.variables] : [];
+                this.renderVariablesList();
+                this.populateFolderSelect();
+                document.getElementById('templateFolder').value = template.folderId || '';
+
+                this.openModal('template');
+            }
+
+            async deleteTemplate(templateId, e) {
+                if (e) e.stopPropagation();
+                if (!confirm('Delete this template?')) return;
+
+                this.state.templates = this.state.templates.filter(t => t.id !== templateId);
+                await this.persistState();
+                this.render();
+                this.showToast('Template deleted');
+            }
+
+            async createFolder() {
+                const name = prompt('Folder name:');
+                if (!name) return;
+
+                const folder = {
+                    id: 'fld_' + Date.now(),
+                    name: name,
+                    createdAt: Date.now()
+                };
+
+                this.state.folders.push(folder);
+                await this.persistState();
+                this.showToast('Folder created');
+                document.getElementById('fabMenu').classList.remove('open');
+                document.getElementById('fabMain').textContent = '+';
+            }
+
+            handleSearch(query) {
+                const container = document.getElementById('searchResults');
+                if (!query.trim()) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div>Type to search</div></div>';
+                    return;
+                }
+
+                const q = query.toLowerCase();
+                const results = this.state.templates.filter(t => 
+                    t.name.toLowerCase().includes(q) || 
+                    t.text.toLowerCase().includes(q)
+                );
+
+                if (results.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">😕</div><div>No results</div></div>';
+                    return;
+                }
+
+                container.innerHTML = results.map(t => this.renderTemplateCard(t)).join('');
+            }
+
+            renderTemplateCard(template) {
+                const folder = this.state.folders.find(f => f.id === template.folderId);
+                const varCount = template.variables ? template.variables.length : 0;
+
+                return `
+                    <div class="template-card animate-in" onclick="app.useTemplate('${template.id}')">
+                        <div class="template-header">
+                            <div class="template-icon">📝</div>
+                            <div class="template-info">
+                                <div class="template-name">${template.name}</div>
+                                <div class="template-meta">
+                                    ${folder ? '📁 ' + folder.name + ' • ' : ''}
+                                    ${varCount} variable${varCount !== 1 ? 's' : ''}
+                                </div>
+                            </div>
+                            <div class="template-actions">
+                                <button class="action-btn" onclick="app.editTemplate('${template.id}', event)">✏️</button>
+                                <button class="action-btn delete" onclick="app.deleteTemplate('${template.id}', event)">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            render() {
+                const container = document.getElementById('templatesContainer');
+                const recent = this.state.templates.slice(0, 5);
+
+                if (recent.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <div>No templates yet</div>
+                            <div style="font-size: 0.875rem; margin-top: var(--spacing-sm);">
+                                Tap + to create your first template
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = recent.map(t => this.renderTemplateCard(t)).join('');
+            }
+
+            renderAllTemplates() {
+                const container = document.getElementById('allTemplatesList');
+
+                if (this.state.templates.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No templates</div>';
+                    return;
+                }
+
+                // Group by folder
+                const grouped = {};
+                const uncategorized = [];
+
+                this.state.templates.forEach(t => {
+                    if (t.folderId) {
+                        if (!grouped[t.folderId]) grouped[t.folderId] = [];
+                        grouped[t.folderId].push(t);
+                    } else {
+                        uncategorized.push(t);
+                    }
+                });
+
+                let html = '';
+
+                // Render folders
+                this.state.folders.forEach(f => {
+                    if (grouped[f.id]) {
+                        html += `<div style="margin-bottom: var(--spacing-lg);">
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--spacing-sm); padding-left: var(--spacing-sm);">
+                                📁 ${f.name}
+                            </div>
+                            ${grouped[f.id].map(t => this.renderTemplateCard(t)).join('')}
+                        </div>`;
+                    }
+                });
+
+                // Render uncategorized
+                if (uncategorized.length > 0) {
+                    html += `<div style="margin-bottom: var(--spacing-lg);">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--spacing-sm); padding-left: var(--spacing-sm);">
+                            Uncategorized
+                        </div>
+                        ${uncategorized.map(t => this.renderTemplateCard(t)).join('')}
+                    </div>`;
+                }
+
+                container.innerHTML = html;
+            }
+
+            exportData() {
+                const data = {
+                    app: 'TypeFill',
+                    version: '1.0.0',
+                    exportDate: new Date().toISOString(),
+                    templates: this.state.templates,
+                    folders: this.state.folders
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `typefill-backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.showToast('Data exported');
+            }
+
+            importData() {
+                document.getElementById('importFile').click();
+            }
+
+            async handleImport(input) {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (!data.templates) throw new Error('Invalid file');
+
+                        if (confirm('Replace current data?')) {
+                            this.state.templates = data.templates || [];
+                            this.state.folders = data.folders || [];
+                            await this.persistState();
+                            this.render();
+                            this.showToast('Data imported');
+                        }
+                    } catch (err) {
+                        alert('Import failed: ' + err.message);
+                    }
+                    input.value = '';
+                };
+                reader.readAsText(file);
+            }
+
+            async clearAllData() {
+                if (!confirm('Delete ALL data? This cannot be undone!')) return;
+                if (!confirm('Are you absolutely sure?')) return;
+
+                this.state.templates = [];
+                this.state.folders = [];
+                await this.persistState();
+                this.render();
+                this.closeModal('settings');
+                this.showToast('All data cleared');
+            }
+
+            showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+        }
+
+        // Initialize
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new TypeFillApp();
+        });
+    </script>
+</body>
+</html>
