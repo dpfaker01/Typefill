@@ -266,31 +266,20 @@
             touch-action: pan-y;
         }
         
-        /* Close all button styling */
-        .close-all-btn {
-            font-size: 10px;
-            padding: 4px 8px;
-            background: transparent;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
+        /* Folder details styling */
+        details > summary {
+            list-style: none;
         }
-        .close-all-btn:hover {
-            background: #f1f5f9;
-            color: #475569;
+        details > summary::-webkit-details-marker {
+            display: none;
         }
-        .dark .close-all-btn {
-            border-color: #475569;
-            color: #94a3b8;
+        details[open] > summary .arrow {
+            transform: rotate(90deg);
         }
-        .dark .close-all-btn:hover {
-            background: #334155;
-            color: #e2e8f0;
+        details > summary .arrow {
+            transition: transform 0.2s ease;
         }
     </style>
-<base target="_blank">
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
@@ -372,12 +361,12 @@
             </div>
 
             <!-- Close All Folders Button -->
-            <div class="px-3 py-2 border-b border-gray-100 dark:border-slate-700 flex justify-end">
-                <button onclick="closeAllFolders()" class="close-all-btn touch-btn flex items-center gap-1" title="Close all folders">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div id="closeAllFoldersContainer" class="hidden px-3 py-2 border-b border-gray-200 bg-slate-100 dark:bg-slate-800 dark:border-slate-700">
+                <button onclick="closeAllFolders()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 py-2 rounded transition dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:text-white touch-btn">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
-                    Close All
+                    <span>Close All Folders</span>
                 </button>
             </div>
 
@@ -1265,12 +1254,27 @@
             
             templateList.innerHTML = '';
             
+            // Show/hide Close All Folders button
+            const closeAllContainer = document.getElementById('closeAllFoldersContainer');
+            const foldersWithTemplates = state.folders.filter(f => 
+                state.templates.some(t => t.folderId === f.id)
+            );
+            
+            if (closeAllContainer) {
+                if (foldersWithTemplates.length > 0) {
+                    closeAllContainer.classList.remove('hidden');
+                } else {
+                    closeAllContainer.classList.add('hidden');
+                }
+            }
+            
+            // Render Folders
             state.folders.forEach(folder => {
                 const folderTemplates = state.templates.filter(t => t.folderId === folder.id);
                 if (folderTemplates.length === 0) return;
                 
                 const details = document.createElement('details');
-                details.open = false; // CHANGED: Default to collapsed
+                details.open = false; // Default to collapsed
                 details.className = "group mb-2";
 
                 const summary = document.createElement('summary');
@@ -1298,6 +1302,7 @@
                 templateList.appendChild(details);
             });
 
+            // Render Uncategorized
             const uncategorized = state.templates.filter(t => !t.folderId);
             if (uncategorized.length > 0) {
                 const div = document.createElement('div');
@@ -1309,6 +1314,7 @@
                 templateList.appendChild(div);
             }
             
+            // Empty state
             if (state.templates.length === 0) {
                 templateList.innerHTML = `
                     <div class="text-center mt-8 text-gray-400 dark:text-gray-500 p-4">
