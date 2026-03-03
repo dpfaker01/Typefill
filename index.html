@@ -2,24 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- CRITICAL: Native app viewport - no zoom, no scale -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
     
-    <!-- iOS PWA settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TypeFill">
     <meta name="application-name" content="TypeFill">
     <meta name="msapplication-TileColor" content="#4f46e5">
     
-    <!-- SEO Meta Tags -->
     <meta name="description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.">
     <meta name="keywords" content="template, text expander, mail merge, snippet, auto fill, form letter, copy paste, variable, shortcut">
     <meta name="author" content="TypeFill">
     
-    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="TypeFill - Create & Reuse Fill-in Templates">
     <meta property="og:description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.">
@@ -27,18 +23,15 @@
     
     <title>TypeFill - Create & Reuse Fill-in Templates</title>
     
-    <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="./icons/icon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180x180.png">
     
-    <!-- Preconnect -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -61,11 +54,9 @@
     </script>
     
     <style>
-        /* NATIVE APP BEHAVIOR - From CashTrail */
         html {
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
-            /* Prevent text size adjustment on orientation change */
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
@@ -73,10 +64,8 @@
         body {
             font-family: 'Inter', sans-serif; 
             background-color: #f8fafc;
-            /* Critical: prevent overscroll bounce */
             overscroll-behavior-y: none;
             -webkit-overflow-scrolling: touch;
-            /* Prevent zoom */
             touch-action: manipulation;
         }
         
@@ -85,7 +74,6 @@
             color: #e2e8f0; 
         }
         
-        /* Safe areas for notched devices */
         .safe-area-top { 
             padding-top: env(safe-area-inset-top); 
         }
@@ -93,20 +81,17 @@
             padding-bottom: env(safe-area-inset-bottom); 
         }
         
-        /* Editor - 16px font to prevent iOS auto-zoom */
         #editor {
             outline: none; 
             line-height: 1.8; 
             white-space: pre-wrap;
             min-height: 300px; 
-            /* CRITICAL: 16px prevents iOS auto-zoom on focus */
             font-size: 16px;
             -webkit-touch-callout: default; 
             user-select: text;
             touch-action: manipulation;
         }
         
-        /* Token styling */
         .token {
             background-color: #e0e7ff; 
             color: #4338ca;
@@ -133,7 +118,6 @@
             background-color: #4338ca; 
         }
         
-        /* Floating action button for variables */
         #floater {
             position: absolute; 
             display: none; 
@@ -149,7 +133,6 @@
             animation: popIn 0.15s ease-out;
             border: none; 
             -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
-            /* Prevent zoom on double tap */
             touch-action: manipulation;
         }
         
@@ -158,14 +141,12 @@
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
         
-        /* Touch-friendly buttons */
         .touch-btn { 
             min-height: 44px; 
             min-width: 44px; 
             touch-action: manipulation;
         }
         
-        /* Custom scrollbar */
         ::-webkit-scrollbar { 
             width: 4px; 
             height: 4px; 
@@ -181,7 +162,6 @@
             background: #475569; 
         }
         
-        /* Toast notification */
         .toast {
             position: fixed; 
             bottom: 80px; 
@@ -199,7 +179,6 @@
             transition: all 0.3s ease;
             max-width: 90vw; 
             text-align: center;
-            /* Prevent zoom */
             touch-action: manipulation;
         }
         
@@ -208,7 +187,6 @@
             opacity: 1; 
         }
         
-        /* Responsive adjustments */
         @media (min-width: 768px) {
             #editor { 
                 font-size: 18px; 
@@ -234,7 +212,6 @@
                 transition: transform 0.3s ease;
                 width: 85% !important; 
                 max-width: 320px;
-                /* Prevent overscroll on sidebar */
                 overscroll-behavior-y: contain;
             }
             aside.open { 
@@ -258,7 +235,6 @@
             }
         }
         
-        /* Scrollable areas - allow vertical scroll only */
         .scrollable-y {
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -266,7 +242,6 @@
             touch-action: pan-y;
         }
         
-        /* Folder details styling */
         details > summary {
             list-style: none;
         }
@@ -283,7 +258,6 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <!-- PWA Install Banner -->
     <div id="installBanner" class="hidden bg-indigo-600 text-white px-4 py-3 text-center text-sm flex items-center justify-between">
         <span class="flex-1">Install TypeFill for offline access</span>
         <div class="flex gap-2">
@@ -292,7 +266,6 @@
         </div>
     </div>
 
-    <!-- Header -->
     <header class="bg-white border-b border-gray-200 h-16 flex justify-between items-center px-4 md:px-6 shadow-sm z-20 shrink-0 safe-area-top">
         <div class="flex items-center gap-3">
             <button onclick="toggleSidebar()" class="md:hidden touch-btn flex items-center justify-center -ml-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800">
@@ -314,7 +287,6 @@
         </div>
         
         <div class="flex gap-2 items-center">
-            <!-- Make Variable Button - Always visible -->
             <button onclick="makeVariableFromSelection()" id="makeVarBtn" class="hidden sm:flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 rounded-md transition border border-emerald-200 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900 dark:hover:bg-emerald-800 touch-btn" title="Create variable from selected text">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
@@ -346,7 +318,6 @@
     <div class="sidebar-overlay md:hidden" onclick="toggleSidebar()"></div>
 
     <main class="flex-1 flex overflow-hidden relative">
-        <!-- Sidebar -->
         <aside id="sidebar" class="w-72 bg-slate-50 border-r border-gray-200 flex flex-col shrink-0 dark:bg-slate-900 dark:border-slate-700 scrollable-y">
             <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-white gap-2 dark:bg-slate-800 dark:border-slate-700">
                 <button onclick="createFolder()" class="flex-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2 py-2 rounded transition border border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 flex items-center justify-center gap-1 touch-btn">
@@ -368,7 +339,6 @@
                 </button>
             </div>
 
-            <!-- Close All Folders Button -->
             <div id="closeAllFoldersContainer" class="hidden px-3 py-2 border-b border-gray-200 bg-slate-100 dark:bg-slate-800 dark:border-slate-700">
                 <button onclick="closeAllFolders()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 py-2 rounded transition dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:text-white touch-btn">
                     <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -396,13 +366,10 @@
             </div>
         </aside>
 
-        <!-- Main Editor Area -->
         <section class="flex-1 bg-white relative flex flex-col min-w-0 dark:bg-slate-900">
-            <!-- Status Bar with Make Variable Button for Mobile -->
             <div class="h-12 border-b border-gray-100 flex items-center px-4 gap-3 text-xs text-gray-400 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-500">
                 <span>Status: <span id="statusIndicator" class="text-green-500 font-medium">Ready</span></span>
                 
-                <!-- Mobile Make Variable Button -->
                 <button onclick="makeVariableFromSelection()" id="mobileMakeVarBtn" class="sm:hidden flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded border border-emerald-200 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900 touch-btn">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
@@ -433,7 +400,6 @@
             </div>
         </section>
 
-        <!-- Variables Panel -->
         <aside id="variablesPanel" class="hidden md:flex w-80 bg-white border-l border-gray-200 flex-col shrink-0 shadow-xl z-10 dark:bg-slate-800 dark:border-slate-700 absolute md:relative right-0 h-full transform translate-x-full md:translate-x-0 transition-transform duration-300">
             <div class="p-4 bg-slate-50 border-b border-gray-200 flex justify-between items-center dark:bg-slate-900 dark:border-slate-700">
                 <div>
@@ -455,10 +421,6 @@
     <input type="file" id="importFileInput" accept=".json" class="hidden">
 
     <script>
-        // ==========================================
-        //  TYPEFILL PWA - NATIVE APP VERSION
-        // ==========================================
-
         const DB_NAME = 'TypeFillDB';
         const DB_VERSION = 1;
         const STORE_TEMPLATES = 'templates';
@@ -468,9 +430,7 @@
         let db = null;
         let deferredPrompt = null;
 
-        // NATIVE APP BEHAVIOR: Prevent zoom gestures
         (function preventZoom() {
-            // Prevent double-tap zoom
             let lastTouchEnd = 0;
             document.addEventListener('touchend', function(e) {
                 const now = Date.now();
@@ -480,14 +440,12 @@
                 lastTouchEnd = now;
             }, { passive: false });
 
-            // Prevent pinch zoom
             document.addEventListener('touchmove', function(e) {
                 if (e.touches.length > 1) {
                     e.preventDefault();
                 }
             }, { passive: false });
 
-            // Prevent gesture zoom (iOS)
             document.addEventListener('gesturestart', function(e) {
                 e.preventDefault();
             }, { passive: false });
@@ -501,7 +459,6 @@
             }, { passive: false });
         })();
 
-        // Handle import function
         window.handleImport = async function(input) {
             console.log('[TypeFill] Import started');
             const file = input.files[0];
@@ -560,7 +517,6 @@
             reader.readAsText(file);
         };
 
-        // Initialize IndexedDB
         async function initDatabase() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -593,7 +549,6 @@
             });
         }
 
-        // Request Persistent Storage
         async function requestPersistentStorage() {
             if (navigator.storage && navigator.storage.persist) {
                 try {
@@ -608,7 +563,6 @@
             return false;
         }
 
-        // Data Access Layer
         const DataLayer = {
             async saveTemplates(templates) {
                 const tx = db.transaction(STORE_TEMPLATES, 'readwrite');
@@ -677,7 +631,6 @@
             }
         };
 
-        // State Management
         const state = {
             templates: [],
             folders: [],
@@ -687,7 +640,6 @@
             isMobile: window.innerWidth < 768
         };
 
-        // Initialization
         window.addEventListener('DOMContentLoaded', async () => {
             try {
                 showToast('Loading TypeFill...');
@@ -710,7 +662,6 @@
                 renderTemplateList();
                 setupInstallPrompt();
                 
-                // Bind import file input
                 const fileInput = document.getElementById('importFileInput');
                 if (fileInput) {
                     fileInput.addEventListener('change', function() {
@@ -725,10 +676,12 @@
             }
         });
 
-        // Service Worker Registration
         async function registerServiceWorker() {
             try {
-                const registration = await navigator.serviceWorker.register('./sw.js');
+                const registration = await navigator.serviceWorker.register('./sw.js', {
+                    scope: './',
+                    updateViaCache: 'none'
+                });
                 console.log('[TypeFill] SW registered:', registration.scope);
                 
                 registration.addEventListener('updatefound', () => {
@@ -736,6 +689,9 @@
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                             showToast('Update available! Refresh to update.');
+                            if (confirm('New version available! Reload now?')) {
+                                window.location.reload();
+                            }
                         }
                     });
                 });
@@ -744,7 +700,6 @@
             }
         }
 
-        // PWA Install Handling
         function setupInstallPrompt() {
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
@@ -777,7 +732,6 @@
             localStorage.setItem('installBannerDismissed', 'true');
         };
 
-        // Theme Management
         async function loadTheme() {
             try {
                 const savedTheme = await DataLayer.getSetting('theme');
@@ -819,7 +773,6 @@
             if (moonIcon) moonIcon.classList.remove('hidden');
         }
 
-        // Data Persistence
         async function loadStateFromStorage() {
             try {
                 const [templates, folders] = await Promise.all([
@@ -830,7 +783,6 @@
                 state.templates = templates || [];
                 state.folders = folders || [];
                 
-                // Migrate from old localStorage if needed
                 const oldData = localStorage.getItem('template_master_db_v2');
                 if (oldData && state.templates.length === 0) {
                     const parsed = JSON.parse(oldData);
@@ -858,7 +810,6 @@
             }
         }
 
-        // UI Components
         window.toggleSidebar = function() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
@@ -883,7 +834,6 @@
             }
         }
 
-        // Close All Folders Function
         window.closeAllFolders = function() {
             const allDetails = document.querySelectorAll('#templateList details');
             allDetails.forEach(details => {
@@ -892,7 +842,6 @@
             showToast('All folders closed');
         };
 
-        // Make Variable from Selection - New Function
         window.makeVariableFromSelection = function() {
             const selection = window.getSelection();
             const text = selection.toString().trim();
@@ -902,7 +851,6 @@
                 return;
             }
             
-            // Check if selection is inside a token
             let parent = selection.anchorNode?.parentElement;
             let isInToken = false;
             while (parent && parent !== editor) {
@@ -922,7 +870,6 @@
             showToast('Variable created!');
         };
 
-        // Folder Management
         window.createFolder = async function() {
             const name = prompt("Enter folder name:");
             if (!name) return;
@@ -988,7 +935,6 @@
             renderTemplateList();
         };
 
-        // Export Data
         window.exportData = async function() {
             if (state.templates.length === 0 && state.folders.length === 0) {
                 alert("Nothing to export!");
@@ -1019,7 +965,6 @@
             showToast("Exported successfully!");
         };
 
-        // Import finalization
         async function finalizeImport(msg) {
             await persistState();
             renderTemplateList();
@@ -1029,7 +974,6 @@
             showToast(msg);
         }
 
-        // Core Editor Logic
         const editor = document.getElementById('editor');
         const floater = document.getElementById('floater');
         const varContainer = document.getElementById('variablesContainer');
@@ -1051,7 +995,6 @@
             const selection = window.getSelection();
             const text = selection.toString().trim();
 
-            // Update Make Variable button visibility/state
             updateMakeVariableButton(text);
 
             if (text.length > 0 && !selection.isCollapsed && editor && editor.contains(selection.anchorNode)) {
@@ -1115,7 +1058,6 @@
             
             const hasSelection = selectedText && selectedText.trim().length > 0;
             
-            // Visual feedback on buttons
             if (desktopBtn) {
                 if (hasSelection) {
                     desktopBtn.classList.add('ring-2', 'ring-emerald-400');
@@ -1256,7 +1198,6 @@
             renderSidebar();
         };
 
-        // Template Management
         window.saveCurrentTemplate = async function() {
             let name = "New Template";
             const currentT = state.templates.find(t => t.id === state.currentTemplateId);
@@ -1331,7 +1272,6 @@
             
             templateList.innerHTML = '';
             
-            // Show/hide Close All Folders button
             const closeAllContainer = document.getElementById('closeAllFoldersContainer');
             const foldersWithTemplates = state.folders.filter(f => 
                 state.templates.some(t => t.folderId === f.id)
@@ -1345,13 +1285,12 @@
                 }
             }
             
-            // Render Folders
             state.folders.forEach(folder => {
                 const folderTemplates = state.templates.filter(t => t.folderId === folder.id);
                 if (folderTemplates.length === 0) return;
                 
                 const details = document.createElement('details');
-                details.open = false; // Default to collapsed
+                details.open = false;
                 details.className = "group mb-2";
 
                 const summary = document.createElement('summary');
@@ -1379,7 +1318,6 @@
                 templateList.appendChild(details);
             });
 
-            // Render Uncategorized
             const uncategorized = state.templates.filter(t => !t.folderId);
             if (uncategorized.length > 0) {
                 const div = document.createElement('div');
@@ -1391,7 +1329,6 @@
                 templateList.appendChild(div);
             }
             
-            // Empty state
             if (state.templates.length === 0) {
                 templateList.innerHTML = `
                     <div class="text-center mt-8 text-gray-400 dark:text-gray-500 p-4">
