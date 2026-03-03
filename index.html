@@ -314,6 +314,14 @@
         </div>
         
         <div class="flex gap-2 items-center">
+            <!-- Make Variable Button - Always visible -->
+            <button onclick="makeVariableFromSelection()" id="makeVarBtn" class="hidden sm:flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 rounded-md transition border border-emerald-200 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900 dark:hover:bg-emerald-800 touch-btn" title="Create variable from selected text">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+                <span>Make Variable</span>
+            </button>
+
             <button onclick="toggleTheme()" class="touch-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition" title="Toggle Theme">
                 <svg id="sunIcon" class="w-5 h-5 text-amber-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -390,10 +398,20 @@
 
         <!-- Main Editor Area -->
         <section class="flex-1 bg-white relative flex flex-col min-w-0 dark:bg-slate-900">
-            <div class="h-12 border-b border-gray-100 flex items-center px-4 gap-4 text-xs text-gray-400 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-500">
+            <!-- Status Bar with Make Variable Button for Mobile -->
+            <div class="h-12 border-b border-gray-100 flex items-center px-4 gap-3 text-xs text-gray-400 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-500">
                 <span>Status: <span id="statusIndicator" class="text-green-500 font-medium">Ready</span></span>
+                
+                <!-- Mobile Make Variable Button -->
+                <button onclick="makeVariableFromSelection()" id="mobileMakeVarBtn" class="sm:hidden flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded border border-emerald-200 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900 touch-btn">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                    </svg>
+                    <span>Make Var</span>
+                </button>
+
                 <div class="flex-1"></div>
-                <span class="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded border border-yellow-100 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800 hidden sm:block">
+                <span class="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded border border-yellow-100 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800 hidden md:block">
                     💡 Highlight text to create variables
                 </span>
                 <button onclick="toggleVariablesPanel()" class="md:hidden touch-btn p-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
@@ -874,6 +892,36 @@
             showToast('All folders closed');
         };
 
+        // Make Variable from Selection - New Function
+        window.makeVariableFromSelection = function() {
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
+            
+            if (!text) {
+                showToast('Please highlight text first');
+                return;
+            }
+            
+            // Check if selection is inside a token
+            let parent = selection.anchorNode?.parentElement;
+            let isInToken = false;
+            while (parent && parent !== editor) {
+                if (parent.classList && parent.classList.contains('token')) {
+                    isInToken = true;
+                    break;
+                }
+                parent = parent.parentElement;
+            }
+            
+            if (isInToken) {
+                showToast('Text is already a variable');
+                return;
+            }
+            
+            createVariable(text);
+            showToast('Variable created!');
+        };
+
         // Folder Management
         window.createFolder = async function() {
             const name = prompt("Enter folder name:");
@@ -1003,6 +1051,9 @@
             const selection = window.getSelection();
             const text = selection.toString().trim();
 
+            // Update Make Variable button visibility/state
+            updateMakeVariableButton(text);
+
             if (text.length > 0 && !selection.isCollapsed && editor && editor.contains(selection.anchorNode)) {
                 let parent = selection.anchorNode.parentElement;
                 let isInToken = false;
@@ -1047,6 +1098,7 @@
                             createVariable(text);
                             newFloater.style.display = 'none';
                             window.getSelection().removeAllRanges();
+                            updateMakeVariableButton('');
                         };
                     }
                 } catch (err) {
@@ -1054,6 +1106,30 @@
                 }
             } else {
                 if (floater) floater.style.display = 'none';
+            }
+        }
+
+        function updateMakeVariableButton(selectedText) {
+            const desktopBtn = document.getElementById('makeVarBtn');
+            const mobileBtn = document.getElementById('mobileMakeVarBtn');
+            
+            const hasSelection = selectedText && selectedText.trim().length > 0;
+            
+            // Visual feedback on buttons
+            if (desktopBtn) {
+                if (hasSelection) {
+                    desktopBtn.classList.add('ring-2', 'ring-emerald-400');
+                } else {
+                    desktopBtn.classList.remove('ring-2', 'ring-emerald-400');
+                }
+            }
+            
+            if (mobileBtn) {
+                if (hasSelection) {
+                    mobileBtn.classList.add('ring-2', 'ring-emerald-400');
+                } else {
+                    mobileBtn.classList.remove('ring-2', 'ring-emerald-400');
+                }
             }
         }
 
@@ -1066,6 +1142,7 @@
                 value: selectedText 
             });
             renderSidebar();
+            updateMakeVariableButton('');
         }
 
         function safeGlobalReplace(searchText, varId) {
