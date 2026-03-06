@@ -1,88 +1,1496 @@
-{
-  "name": "TypeFill - Create & Reuse Fill-in Templates",
-  "short_name": "TypeFill",
-  "description": "Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
-  "orientation": "portrait",
-  "scope": "./",
-  "lang": "en",
-  "dir": "ltr",
-  "icons": [
-    {
-      "src": "./icons/icon-16x16.png",
-      "sizes": "16x16",
-      "type": "image/png"
-    },
-    {
-      "src": "./icons/icon-32x32.png",
-      "sizes": "32x32",
-      "type": "image/png"
-    },
-    {
-      "src": "./icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png"
-    },
-    {
-      "src": "./icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "./icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png"
-    },
-    {
-      "src": "./icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "./icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
-    {
-      "src": "./icons/icon-180x180.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    },
-    {
-      "src": "./icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png"
-    },
-    {
-      "src": "./icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["productivity", "utilities", "business"],
-  "screenshots": [],
-  "shortcuts": [
-    {
-      "name": "New Template",
-      "short_name": "New",
-      "description": "Create a new template",
-      "url": "./index.html?action=new",
-      "icons": [{ "src": "./icons/icon-96x96.png", "sizes": "96x96" }]
-    }
-  ],
-  "features": [
-    "offline"
-  ],
-  "related_applications": [],
-  "prefer_related_applications": false
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TypeFill">
+    <meta name="application-name" content="TypeFill">
+    <meta name="msapplication-TileColor" content="#4f46e5">
+    
+    <meta name="description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds. Works completely offline.">
+    <meta name="keywords" content="template, text expander, mail merge, snippet, auto fill, form letter, copy paste, variable, shortcut">
+    <meta name="author" content="TypeFill">
+    
+    <title>TypeFill - Create & Reuse Fill-in Templates</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./icons/icon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180x180.png">
+    
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: {
+                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
+                            300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1',
+                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        html {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc;
+            overscroll-behavior-y: none;
+            -webkit-overflow-scrolling: touch;
+            touch-action: manipulation;
+        }
+        
+        .dark body { 
+            background-color: #0f172a; 
+            color: #e2e8f0; 
+        }
+        
+        .safe-area-top { 
+            padding-top: env(safe-area-inset-top); 
+        }
+        .safe-area-bottom { 
+            padding-bottom: env(safe-area-inset-bottom); 
+        }
+        
+        #editor {
+            outline: none; 
+            line-height: 1.8; 
+            white-space: pre-wrap;
+            min-height: 300px; 
+            font-size: 16px;
+            -webkit-touch-callout: default; 
+            user-select: text;
+            touch-action: manipulation;
+        }
+        
+        .token {
+            background-color: #e0e7ff; 
+            color: #4338ca;
+            border-bottom: 2px solid #4f46e5; 
+            padding: 0 4px;
+            border-radius: 4px; 
+            font-weight: 600;
+            display: inline-block; 
+            cursor: pointer;
+            transition: all 0.2s; 
+            word-break: break-all;
+        }
+        
+        .dark .token {
+            background-color: #312e81; 
+            color: #c7d2fe;
+            border-bottom-color: #6366f1;
+        }
+        
+        .token:hover { 
+            background-color: #c7d2fe; 
+        }
+        .dark .token:hover { 
+            background-color: #4338ca; 
+        }
+        
+        #floater {
+            position: absolute; 
+            display: none; 
+            background: #1e293b;
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 50px;
+            font-size: 14px; 
+            font-weight: 600; 
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            z-index: 50; 
+            animation: popIn 0.15s ease-out;
+            border: none; 
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+            touch-action: manipulation;
+        }
+        
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .touch-btn { 
+            min-height: 44px; 
+            min-width: 44px; 
+            touch-action: manipulation;
+        }
+        
+        ::-webkit-scrollbar { 
+            width: 4px; 
+            height: 4px; 
+        }
+        ::-webkit-scrollbar-track { 
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 2px; 
+        }
+        .dark ::-webkit-scrollbar-thumb { 
+            background: #475569; 
+        }
+        
+        .toast {
+            position: fixed; 
+            bottom: 80px; 
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b; 
+            color: white;
+            padding: 12px 24px; 
+            border-radius: 8px;
+            font-size: 14px; 
+            font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            z-index: 150; 
+            opacity: 0; 
+            transition: all 0.3s ease;
+            max-width: 90vw; 
+            text-align: center;
+            touch-action: manipulation;
+        }
+        
+        .toast.show { 
+            transform: translateX(-50%) translateY(0); 
+            opacity: 1; 
+        }
+        
+        @media (min-width: 768px) {
+            #editor { 
+                font-size: 18px; 
+                min-height: 400px; 
+            }
+            .mobile-only { 
+                display: none; 
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .desktop-only { 
+                display: none; 
+            }
+            aside {
+                position: fixed; 
+                top: 0; 
+                left: 0; 
+                right: 0; 
+                bottom: 0;
+                z-index: 100; 
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 85% !important; 
+                max-width: 320px;
+                overscroll-behavior-y: contain;
+            }
+            aside.open { 
+                transform: translateX(0); 
+            }
+            .sidebar-overlay {
+                position: fixed; 
+                top: 0; 
+                left: 0; 
+                right: 0; 
+                bottom: 0;
+                background: rgba(0,0,0,0.5); 
+                z-index: 99;
+                opacity: 0; 
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+            }
+            .sidebar-overlay.open { 
+                opacity: 1; 
+                pointer-events: all; 
+            }
+        }
+        
+        .scrollable-y {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            touch-action: pan-y;
+        }
+        
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details[open] > summary .arrow {
+            transform: rotate(90deg);
+        }
+        details > summary .arrow {
+            transition: transform 0.2s ease;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <div id="installBanner" class="hidden bg-indigo-600 text-white px-4 py-3 text-center text-sm flex items-center justify-between">
+        <span class="flex-1">Install TypeFill for offline access</span>
+        <div class="flex gap-2">
+            <button onclick="installPWA()" class="bg-white text-indigo-600 px-4 py-1.5 rounded font-semibold text-xs touch-btn">Install</button>
+            <button onclick="dismissInstall()" class="text-white opacity-75 px-2 touch-btn">×</button>
+        </div>
+    </div>
+
+    <header class="bg-white border-b border-gray-200 h-16 flex justify-between items-center px-4 md:px-6 shadow-sm z-20 shrink-0 safe-area-top">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="md:hidden touch-btn flex items-center justify-center -ml-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800">
+                <svg class="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            
+            <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-tight dark:text-white leading-tight">TypeFill</h1>
+                <p class="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Create & Reuse Fill-in Templates</p>
+            </div>
+        </div>
+        
+        <div class="flex gap-2 items-center">
+            <button onclick="makeVariableFromSelection()" id="makeVarBtn" class="hidden sm:flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 rounded-md transition border border-emerald-200 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900 dark:hover:bg-emerald-800 touch-btn" title="Create variable from selected text">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+                <span>Make Variable</span>
+            </button>
+
+            <button onclick="toggleTheme()" class="touch-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition" title="Toggle Theme">
+                <svg id="sunIcon" class="w-5 h-5 text-amber-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                <svg id="moonIcon" class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+            </button>
+            
+            <button onclick="saveCurrentTemplate()" class="hidden md:flex text-sm font-medium text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-md transition border border-indigo-200 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900 touch-btn">
+                Save
+            </button>
+            <button onclick="copyFinalText()" id="copyBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow-md transition flex items-center gap-2 touch-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+                <span class="hidden sm:inline">Copy</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay md:hidden" onclick="toggleSidebar()"></div>
+
+    <main class="flex-1 flex overflow-hidden relative">
+        <aside id="sidebar" class="w-72 bg-slate-50 border-r border-gray-200 flex flex-col shrink-0 dark:bg-slate-900 dark:border-slate-700 scrollable-y">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-white gap-2 dark:bg-slate-800 dark:border-slate-700">
+                <button onclick="createFolder()" class="flex-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2 py-2 rounded transition border border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 flex items-center justify-center gap-1 touch-btn">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span>Folder</span>
+                </button>
+                <button onclick="createNew()" class="flex-1 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-2 py-2 rounded transition border border-indigo-100 dark:bg-indigo-900 dark:text-indigo-300 dark:border-indigo-800 flex items-center justify-center gap-1 touch-btn">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>Template</span>
+                </button>
+                <button onclick="toggleSidebar()" class="md:hidden touch-btn p-2 text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="closeAllFoldersContainer" class="hidden px-3 py-2 border-b border-gray-200 bg-slate-100 dark:bg-slate-800 dark:border-slate-700">
+                <button onclick="closeAllFolders()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 py-2 rounded transition dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:text-white touch-btn">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                    <span>Close All Folders</span>
+                </button>
+            </div>
+
+            <div id="templateList" class="flex-1 overflow-y-auto p-2 space-y-1 scrollable-y"></div>
+
+            <div class="p-4 border-t border-gray-200 bg-white space-y-2 dark:bg-slate-800 dark:border-slate-700">
+                <button onclick="openBackupModal()" class="w-full flex items-center justify-center gap-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 py-3 rounded-lg transition dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 touch-btn">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                    </svg>
+                    Data Backup & Restore
+                </button>
+            </div>
+        </aside>
+
+        <section class="flex-1 bg-white relative flex flex-col min-w-0 dark:bg-slate-900">
+            <div class="h-12 border-b border-gray-100 flex items-center px-4 gap-3 text-xs text-gray-400 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-500">
+                <span>Status: <span id="statusIndicator" class="text-green-500 font-medium">Ready</span></span>
+                
+                <button onclick="makeVariableFromSelection()" id="mobileMakeVarBtn" class="sm:hidden flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded border border-emerald-200 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900 touch-btn">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                    </svg>
+                    <span>Make Var</span>
+                </button>
+
+                <div class="flex-1"></div>
+                <span class="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded border border-yellow-100 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800 hidden md:block">
+                    💡 Highlight text to create variables
+                </span>
+                <button onclick="toggleVariablesPanel()" class="md:hidden touch-btn p-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-white cursor-text dark:bg-slate-900 scrollable-y" id="editorContainer">
+                <div id="editor" contenteditable="true" class="max-w-3xl mx-auto focus:outline-none text-base text-gray-700 dark:text-gray-200" spellcheck="false" placeholder="Start typing your template..."></div>
+                <button id="floater" class="touch-btn">✨ Make Variable</button>
+            </div>
+            
+            <div class="md:hidden border-t border-gray-200 bg-white p-3 flex gap-2 dark:bg-slate-800 dark:border-slate-700 safe-area-bottom">
+                <button onclick="saveCurrentTemplate()" class="flex-1 bg-indigo-600 text-white font-medium py-3 rounded-lg touch-btn">
+                    Save Template
+                </button>
+            </div>
+        </section>
+
+        <aside id="variablesPanel" class="hidden md:flex w-80 bg-white border-l border-gray-200 flex-col shrink-0 shadow-xl z-10 dark:bg-slate-800 dark:border-slate-700 absolute md:relative right-0 h-full transform translate-x-full md:translate-x-0 transition-transform duration-300">
+            <div class="p-4 bg-slate-50 border-b border-gray-200 flex justify-between items-center dark:bg-slate-900 dark:border-slate-700">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-700 dark:text-gray-200">Variables</h2>
+                    <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">Replace highlighted text here.</p>
+                </div>
+                <button onclick="toggleVariablesPanel()" class="md:hidden touch-btn p-2">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="variablesContainer" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900 scrollable-y"></div>
+        </aside>
+    </main>
+
+    <!-- Backup & Restore Modal -->
+    <div id="backupModal" class="hidden fixed inset-0 bg-slate-900/50 z-[200] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Data Backup</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">Save or restore your templates safely.</p>
+            
+            <div class="space-y-4">
+                <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export Data
+                    </h4>
+                    <div class="flex gap-2">
+                        <button onclick="downloadBackup()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition touch-btn shadow-sm">Save File</button>
+                        <button onclick="copyBackupToClipboard()" class="flex-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700 text-xs font-semibold py-2.5 px-3 rounded-lg transition touch-btn shadow-sm">Copy Text</button>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        Import Data
+                    </h4>
+                    <div class="flex gap-2">
+                        <button onclick="document.getElementById('importFileInput').click()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition touch-btn shadow-sm">Open File</button>
+                        <button onclick="pasteBackupFromClipboard()" class="flex-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700 text-xs font-semibold py-2.5 px-3 rounded-lg transition touch-btn shadow-sm">Paste Text</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="closeBackupModal()" class="mt-5 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 text-sm font-semibold py-3 rounded-lg transition touch-btn">Close</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <input type="file" id="importFileInput" accept=".json" class="hidden">
+
+    <script>
+        const DB_NAME = 'TypeFillDB';
+        const DB_VERSION = 1;
+        const STORE_TEMPLATES = 'templates';
+        const STORE_FOLDERS = 'folders';
+        const STORE_SETTINGS = 'settings';
+        
+        let db = null;
+        let deferredPrompt = null;
+
+        // Native App feel setup: Prevents zoom on double-tap and pinch zoom
+        (function preventZoom() {
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
+
+            document.addEventListener('touchmove', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        })();
+
+        async function initDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => reject(request.error);
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    console.log('[TypeFill] Database initialized');
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    
+                    if (!database.objectStoreNames.contains(STORE_TEMPLATES)) {
+                        const templateStore = database.createObjectStore(STORE_TEMPLATES, { keyPath: 'id' });
+                        templateStore.createIndex('folderId', 'folderId', { unique: false });
+                        templateStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+                    }
+                    
+                    if (!database.objectStoreNames.contains(STORE_FOLDERS)) {
+                        database.createObjectStore(STORE_FOLDERS, { keyPath: 'id' });
+                    }
+                    
+                    if (!database.objectStoreNames.contains(STORE_SETTINGS)) {
+                        database.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
+                    }
+                };
+            });
+        }
+
+        async function requestPersistentStorage() {
+            if (navigator.storage && navigator.storage.persist) {
+                try {
+                    const isPersistent = await navigator.storage.persist();
+                    console.log(`[TypeFill] Persistent storage: ${isPersistent}`);
+                    return isPersistent;
+                } catch (err) {
+                    console.log('[TypeFill] Persistent storage request failed:', err);
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        const DataLayer = {
+            async saveTemplates(templates) {
+                const tx = db.transaction(STORE_TEMPLATES, 'readwrite');
+                const store = tx.objectStore(STORE_TEMPLATES);
+                await store.clear();
+                for (const template of templates) {
+                    await store.put(template);
+                }
+                return new Promise((resolve, reject) => {
+                    tx.oncomplete = resolve;
+                    tx.onerror = () => reject(tx.error);
+                });
+            },
+            
+            async getTemplates() {
+                const tx = db.transaction(STORE_TEMPLATES, 'readonly');
+                const store = tx.objectStore(STORE_TEMPLATES);
+                const request = store.getAll();
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+            
+            async saveFolders(folders) {
+                const tx = db.transaction(STORE_FOLDERS, 'readwrite');
+                const store = tx.objectStore(STORE_FOLDERS);
+                await store.clear();
+                for (const folder of folders) {
+                    await store.put(folder);
+                }
+                return new Promise((resolve, reject) => {
+                    tx.oncomplete = resolve;
+                    tx.onerror = () => reject(tx.error);
+                });
+            },
+            
+            async getFolders() {
+                const tx = db.transaction(STORE_FOLDERS, 'readonly');
+                const store = tx.objectStore(STORE_FOLDERS);
+                const request = store.getAll();
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+            
+            async saveSetting(key, value) {
+                const tx = db.transaction(STORE_SETTINGS, 'readwrite');
+                const store = tx.objectStore(STORE_SETTINGS);
+                await store.put({ key, value, timestamp: Date.now() });
+                return new Promise((resolve, reject) => {
+                    tx.oncomplete = resolve;
+                    tx.onerror = () => reject(tx.error);
+                });
+            },
+            
+            async getSetting(key) {
+                const tx = db.transaction(STORE_SETTINGS, 'readonly');
+                const store = tx.objectStore(STORE_SETTINGS);
+                const request = store.get(key);
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve(request.result?.value);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+        };
+
+        const state = {
+            templates: [],
+            folders: [],
+            currentVariables: [], 
+            currentTemplateId: null,
+            darkMode: false,
+            isMobile: window.innerWidth < 768
+        };
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                showToast('Loading TypeFill...');
+                
+                if ('serviceWorker' in navigator) {
+                    await registerServiceWorker();
+                }
+                
+                await initDatabase();
+                await requestPersistentStorage();
+                await loadTheme();
+                await loadStateFromStorage();
+                
+                if (state.templates.length === 0) {
+                    editor.innerHTML = `Welcome to TypeFill! Create your first template by typing here, then highlight text to make variables.`;
+                } else {
+                    loadTemplateUI(state.templates[0].id);
+                }
+                
+                renderTemplateList();
+                setupInstallPrompt();
+                
+                const fileInput = document.getElementById('importFileInput');
+                if (fileInput) {
+                    fileInput.addEventListener('change', function() {
+                        handleImport(this);
+                    });
+                }
+                
+                showToast('TypeFill Ready');
+            } catch (err) {
+                console.error('Initialization error:', err);
+                showToast('Error loading app');
+            }
+        });
+
+        async function registerServiceWorker() {
+            try {
+                const registration = await navigator.serviceWorker.register('./sw.js', {
+                    scope: './',
+                    updateViaCache: 'none'
+                });
+                console.log('[TypeFill] SW registered:', registration.scope);
+                
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showToast('Update available! Refresh to update.');
+                            if (confirm('New version available! Reload now?')) {
+                                window.location.reload();
+                            }
+                        }
+                    });
+                });
+            } catch (err) {
+                console.log('[TypeFill] SW registration failed:', err);
+            }
+        }
+
+        function setupInstallPrompt() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                setTimeout(() => {
+                    const banner = document.getElementById('installBanner');
+                    const dismissed = localStorage.getItem('installBannerDismissed');
+                    if (banner && !dismissed && !window.matchMedia('(display-mode: standalone)').matches) {
+                        banner.classList.remove('hidden');
+                    }
+                }, 3000);
+            });
+        }
+
+        window.installPWA = async function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    showToast('TypeFill installed!');
+                    document.getElementById('installBanner').classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        };
+
+        window.dismissInstall = function() {
+            document.getElementById('installBanner').classList.add('hidden');
+            localStorage.setItem('installBannerDismissed', 'true');
+        };
+
+        async function loadTheme() {
+            try {
+                const savedTheme = await DataLayer.getSetting('theme');
+                if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    enableDarkMode();
+                } else {
+                    enableLightMode();
+                }
+            } catch (err) {
+                console.log('[TypeFill] Theme load error:', err);
+            }
+        }
+
+        window.toggleTheme = function() {
+            if (state.darkMode) {
+                enableLightMode();
+                DataLayer.saveSetting('theme', 'light');
+            } else {
+                enableDarkMode();
+                DataLayer.saveSetting('theme', 'dark');
+            }
+        };
+
+        function enableDarkMode() {
+            document.documentElement.classList.add('dark');
+            state.darkMode = true;
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            if (sunIcon) sunIcon.classList.remove('hidden');
+            if (moonIcon) moonIcon.classList.add('hidden');
+        }
+
+        function enableLightMode() {
+            document.documentElement.classList.remove('dark');
+            state.darkMode = false;
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            if (sunIcon) sunIcon.classList.add('hidden');
+            if (moonIcon) moonIcon.classList.remove('hidden');
+        }
+
+        async function loadStateFromStorage() {
+            try {
+                const [templates, folders] = await Promise.all([
+                    DataLayer.getTemplates(),
+                    DataLayer.getFolders()
+                ]);
+                
+                state.templates = templates || [];
+                state.folders = folders || [];
+                
+                const oldData = localStorage.getItem('template_master_db_v2');
+                if (oldData && state.templates.length === 0) {
+                    const parsed = JSON.parse(oldData);
+                    state.templates = parsed.templates || [];
+                    state.folders = parsed.folders || [];
+                    await persistState();
+                    localStorage.removeItem('template_master_db_v2');
+                    showToast('Data migrated to secure storage');
+                }
+            } catch (err) {
+                console.error('[TypeFill] Storage load error:', err);
+            }
+        }
+
+        async function persistState() {
+            try {
+                await Promise.all([
+                    DataLayer.saveTemplates(state.templates),
+                    DataLayer.saveFolders(state.folders)
+                ]);
+                console.log('[TypeFill] State persisted');
+            } catch (err) {
+                console.error('[TypeFill] Save error:', err);
+                showToast('Failed to save data');
+            }
+        }
+
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (sidebar) sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+        };
+
+        window.toggleVariablesPanel = function() {
+            const panel = document.getElementById('variablesPanel');
+            if (panel) {
+                panel.classList.toggle('hidden');
+                panel.classList.toggle('translate-x-full');
+            }
+        };
+
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), duration);
+            }
+        }
+
+        window.closeAllFolders = function() {
+            const allDetails = document.querySelectorAll('#templateList details');
+            allDetails.forEach(details => {
+                details.open = false;
+            });
+            showToast('All folders closed');
+        };
+
+        window.makeVariableFromSelection = function() {
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
+            
+            if (!text) {
+                showToast('Please highlight text first');
+                return;
+            }
+            
+            let parent = selection.anchorNode?.parentElement;
+            let isInToken = false;
+            while (parent && parent !== editor) {
+                if (parent.classList && parent.classList.contains('token')) {
+                    isInToken = true;
+                    break;
+                }
+                parent = parent.parentElement;
+            }
+            
+            if (isInToken) {
+                showToast('Text is already a variable');
+                return;
+            }
+            
+            createVariable(text);
+            showToast('Variable created!');
+        };
+
+        window.createFolder = async function() {
+            const name = prompt("Enter folder name:");
+            if (!name) return;
+            
+            const newFolder = {
+                id: 'folder_' + Date.now(),
+                name: name,
+                createdAt: Date.now()
+            };
+            
+            state.folders.push(newFolder);
+            await persistState();
+            renderTemplateList();
+            showToast(`Folder "${name}" created`);
+        };
+
+        window.deleteFolder = async function(id, e) {
+            if (e) e.stopPropagation();
+            if (!confirm("Delete folder? Templates will be uncategorized.")) return;
+            
+            state.folders = state.folders.filter(f => f.id !== id);
+            state.templates.forEach(t => {
+                if (t.folderId === id) delete t.folderId;
+            });
+            
+            await persistState();
+            renderTemplateList();
+            showToast('Folder deleted');
+        };
+
+        window.moveTemplate = async function(templateId, e) {
+            if (e) e.stopPropagation();
+            
+            if (state.folders.length === 0) {
+                alert("Create a folder first!");
+                return;
+            }
+
+            let msg = "Select folder:\n\n0: Uncategorized\n";
+            state.folders.forEach((f, idx) => {
+                msg += `${idx + 1}: ${f.name}\n`;
+            });
+
+            const response = prompt(msg);
+            if (response === null) return;
+            
+            const index = parseInt(response);
+            const template = state.templates.find(t => t.id === templateId);
+            if (!template) return;
+
+            if (index === 0) {
+                delete template.folderId;
+                showToast('Moved to Uncategorized');
+            } else if (index > 0 && index <= state.folders.length) {
+                template.folderId = state.folders[index - 1].id;
+                showToast(`Moved to ${state.folders[index - 1].name}`);
+            } else {
+                alert("Invalid selection");
+                return;
+            }
+
+            await persistState();
+            renderTemplateList();
+        };
+
+        // ==========================================
+        // BACKUP & RESTORE FIX FOR APKs
+        // ==========================================
+
+        window.openBackupModal = function() {
+            document.getElementById('backupModal').classList.remove('hidden');
+            if (window.innerWidth < 768) toggleSidebar(); 
+        };
+
+        window.closeBackupModal = function() {
+            document.getElementById('backupModal').classList.add('hidden');
+        };
+
+        function getExportDataStr() {
+            if (state.templates.length === 0 && state.folders.length === 0) {
+                alert("Nothing to export!");
+                return null;
+            }
+            const exportObj = {
+                app: "TypeFill",
+                version: "1.2.0",
+                exportDate: new Date().toISOString(),
+                folders: state.folders,
+                templates: state.templates
+            };
+            return JSON.stringify(exportObj, null, 2);
+        }
+
+        window.downloadBackup = function() {
+            const dataStr = getExportDataStr();
+            if (!dataStr) return;
+
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const fileName = `typefill_backup_${dateStr}.json`;
+
+            try {
+                // Exact matching string formatting to BP Tracker (which works natively offline in your APK wrapper)
+                const a = document.createElement('a');
+                a.href = "data:text/json;charset=utf-8," + encodeURIComponent(dataStr);
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                
+                showToast("Backup downloaded!");
+            } catch (err) {
+                console.error("Export error:", err);
+                showToast("Download failed. Please use 'Copy Text' instead.");
+            }
+        };
+
+        window.copyBackupToClipboard = async function() {
+            const dataStr = getExportDataStr();
+            if (!dataStr) return;
+
+            try {
+                await navigator.clipboard.writeText(dataStr);
+                showToast("Backup copied to clipboard!");
+            } catch (err) {
+                // Fallback if clipboard API is strictly blocked
+                const textArea = document.createElement("textarea");
+                textArea.value = dataStr;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast("Backup copied to clipboard!");
+                } catch (e) {
+                    alert("Could not copy automatically. Your app blocks clipboard access.");
+                }
+                document.body.removeChild(textArea);
+            }
+        };
+
+        window.pasteBackupFromClipboard = async function() {
+            try {
+                let text = await navigator.clipboard.readText();
+                if (!text || !text.trim().startsWith('{')) {
+                    throw new Error("No valid JSON in clipboard");
+                }
+                processImportData(text);
+            } catch (err) {
+                // Manual prompt fallback if clipboard read is blocked
+                let text = prompt("Please paste your backup JSON text here:");
+                if (text) processImportData(text);
+            }
+        };
+
+        window.handleImport = async function(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                await processImportData(e.target.result);
+                input.value = '';
+            };
+            
+            reader.onerror = () => {
+                alert("Error reading file");
+                input.value = '';
+            };
+            
+            reader.readAsText(file);
+        };
+
+        window.processImportData = async function(jsonText) {
+            if (!jsonText || !jsonText.trim().startsWith('{')) {
+                alert("Invalid backup data format.");
+                return;
+            }
+            try {
+                const data = JSON.parse(jsonText);
+                let newTemplates = [];
+                let newFolders = [];
+
+                if (Array.isArray(data)) {
+                    newTemplates = data;
+                } else if (data.templates) {
+                    newTemplates = data.templates;
+                    newFolders = data.folders || [];
+                } else {
+                    throw new Error("Invalid format");
+                }
+
+                const shouldOverwrite = confirm("Click OK to OVERWRITE current data.\nClick CANCEL to MERGE with existing data.");
+                
+                if (shouldOverwrite) {
+                    state.templates = newTemplates;
+                    state.folders = newFolders;
+                    await finalizeImport("Data overwritten successfully!");
+                } else {
+                    newFolders.forEach(nf => {
+                        if (!state.folders.find(cf => cf.id === nf.id)) {
+                            state.folders.push(nf);
+                        }
+                    });
+                    newTemplates.forEach(nt => {
+                        const idx = state.templates.findIndex(curr => curr.id === nt.id);
+                        if (idx > -1) {
+                            state.templates[idx] = nt;
+                        } else {
+                            state.templates.push(nt);
+                        }
+                    });
+                    await finalizeImport("Data merged successfully!");
+                }
+                closeBackupModal();
+            } catch (err) {
+                console.error('[TypeFill] Import error:', err);
+                alert("Error loading data: " + err.message);
+            }
+        };
+
+        async function finalizeImport(msg) {
+            await persistState();
+            renderTemplateList();
+            if (state.templates.length > 0) {
+                loadTemplateUI(state.templates[0].id);
+            }
+            showToast(msg);
+        }
+
+        // ==========================================
+        // EDITOR LOGIC
+        // ==========================================
+
+        const editor = document.getElementById('editor');
+        const floater = document.getElementById('floater');
+        const varContainer = document.getElementById('variablesContainer');
+        const templateList = document.getElementById('templateList');
+        const statusInd = document.getElementById('statusIndicator');
+
+        if (editor) {
+            editor.addEventListener('mouseup', handleSelection);
+            editor.addEventListener('keyup', handleSelection);
+
+            let touchTimer = null;
+            editor.addEventListener('touchend', () => {
+                clearTimeout(touchTimer);
+                touchTimer = setTimeout(handleSelection, 300);
+            });
+        }
+
+        function handleSelection() {
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
+
+            updateMakeVariableButton(text);
+
+            if (text.length > 0 && !selection.isCollapsed && editor && editor.contains(selection.anchorNode)) {
+                let parent = selection.anchorNode.parentElement;
+                let isInToken = false;
+                while (parent && parent !== editor) {
+                    if (parent.classList && parent.classList.contains('token')) {
+                        isInToken = true;
+                        break;
+                    }
+                    parent = parent.parentElement;
+                }
+                
+                if (isInToken) {
+                    if (floater) floater.style.display = 'none';
+                    return;
+                }
+
+                try {
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+                    
+                    const isMobile = window.innerWidth < 768;
+                    const floaterWidth = isMobile ? 140 : 120;
+                    
+                    let left = rect.left + (rect.width / 2) - (floaterWidth / 2);
+                    let top = rect.top + window.scrollY - (isMobile ? 55 : 45);
+                    
+                    if (left < 10) left = 10;
+                    if (left + floaterWidth > window.innerWidth) {
+                        left = window.innerWidth - floaterWidth - 10;
+                    }
+                    
+                    if (floater) {
+                        floater.style.display = 'block';
+                        floater.style.top = `${top}px`;
+                        floater.style.left = `${left}px`;
+                        
+                        const newFloater = floater.cloneNode(true);
+                        floater.parentNode.replaceChild(newFloater, floater);
+                        
+                        newFloater.onclick = (e) => {
+                            e.stopPropagation();
+                            createVariable(text);
+                            newFloater.style.display = 'none';
+                            window.getSelection().removeAllRanges();
+                            updateMakeVariableButton('');
+                        };
+                    }
+                } catch (err) {
+                    console.error('[TypeFill] Selection error:', err);
+                }
+            } else {
+                if (floater) floater.style.display = 'none';
+            }
+        }
+
+        function updateMakeVariableButton(selectedText) {
+            const desktopBtn = document.getElementById('makeVarBtn');
+            const mobileBtn = document.getElementById('mobileMakeVarBtn');
+            
+            const hasSelection = selectedText && selectedText.trim().length > 0;
+            
+            if (desktopBtn) {
+                if (hasSelection) {
+                    desktopBtn.classList.add('ring-2', 'ring-emerald-400');
+                } else {
+                    desktopBtn.classList.remove('ring-2', 'ring-emerald-400');
+                }
+            }
+            
+            if (mobileBtn) {
+                if (hasSelection) {
+                    mobileBtn.classList.add('ring-2', 'ring-emerald-400');
+                } else {
+                    mobileBtn.classList.remove('ring-2', 'ring-emerald-400');
+                }
+            }
+        }
+
+        function createVariable(selectedText) {
+            const varId = 'var_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            safeGlobalReplace(selectedText, varId);
+            state.currentVariables.push({ 
+                id: varId, 
+                label: selectedText, 
+                value: selectedText 
+            });
+            renderSidebar();
+            updateMakeVariableButton('');
+        }
+
+        function safeGlobalReplace(searchText, varId) {
+            if (!editor) return;
+            
+            const walker = document.createTreeWalker(
+                editor, 
+                NodeFilter.SHOW_TEXT, 
+                null, 
+                false
+            );
+            
+            const nodesToReplace = [];
+            
+            while (walker.nextNode()) {
+                const node = walker.currentNode;
+                if (node.nodeValue.includes(searchText)) {
+                    let parent = node.parentElement;
+                    let isInToken = false;
+                    while (parent && parent !== editor) {
+                        if (parent.classList && parent.classList.contains('token')) {
+                            isInToken = true;
+                            break;
+                        }
+                        parent = parent.parentElement;
+                    }
+                    
+                    if (!isInToken) {
+                        nodesToReplace.push(node);
+                    }
+                }
+            }
+            
+            nodesToReplace.forEach(node => {
+                const fragment = document.createDocumentFragment();
+                const parts = node.nodeValue.split(searchText);
+                
+                parts.forEach((part, index) => {
+                    fragment.appendChild(document.createTextNode(part));
+                    
+                    if (index < parts.length - 1) {
+                        const span = document.createElement('span');
+                        span.className = 'token';
+                        span.dataset.id = varId;
+                        span.textContent = searchText;
+                        fragment.appendChild(span);
+                    }
+                });
+                
+                if (node.parentNode) {
+                    node.parentNode.replaceChild(fragment, node);
+                }
+            });
+        }
+
+        function renderSidebar() {
+            if (!varContainer) return;
+            
+            varContainer.innerHTML = '';
+            
+            if (state.currentVariables.length === 0) {
+                varContainer.innerHTML = `
+                    <div class="text-center mt-12 text-gray-400 dark:text-gray-500">
+                        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                        </svg>
+                        <p class="text-sm">Highlight text to create variables</p>
+                    </div>`;
+                return;
+            }
+            
+            state.currentVariables.forEach(v => {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-3 rounded shadow-sm border border-gray-200 dark:bg-slate-800 dark:border-slate-700';
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-bold text-gray-500 uppercase truncate dark:text-gray-400" title="${v.label}">${v.label}</label>
+                        <button onclick="deleteVariable('${v.id}')" class="text-xs text-red-400 hover:text-red-600 touch-btn p-1">Unlink</button>
+                    </div>
+                    <input type="text" value="${escapeHtml(v.value)}" 
+                        oninput="updateVariable('${v.id}', this.value)" 
+                        class="w-full bg-indigo-50 border border-indigo-200 text-gray-800 text-sm rounded px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                        placeholder="Replacement...">
+                `;
+                varContainer.appendChild(div);
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        window.updateVariable = function(id, newValue) {
+            const tokens = document.querySelectorAll(`.token[data-id="${id}"]`);
+            tokens.forEach(t => t.textContent = newValue);
+            const v = state.currentVariables.find(x => x.id === id);
+            if (v) v.value = newValue;
+        };
+
+        window.deleteVariable = function(id) {
+            const tokens = document.querySelectorAll(`.token[data-id="${id}"]`);
+            tokens.forEach(t => {
+                const text = document.createTextNode(t.textContent);
+                if (t.parentNode) {
+                    t.parentNode.replaceChild(text, t);
+                }
+            });
+            state.currentVariables = state.currentVariables.filter(x => x.id !== id);
+            renderSidebar();
+        };
+
+        window.saveCurrentTemplate = async function() {
+            let name = "New Template";
+            const currentT = state.templates.find(t => t.id === state.currentTemplateId);
+            if (currentT) name = currentT.name;
+
+            name = prompt("Template Name:", name);
+            if (!name) return;
+
+            const template = {
+                id: state.currentTemplateId || Date.now().toString(),
+                name: name,
+                html: editor ? editor.innerHTML : '',
+                variables: state.currentVariables,
+                folderId: currentT ? currentT.folderId : undefined,
+                updatedAt: Date.now()
+            };
+
+            const existingIndex = state.templates.findIndex(t => t.id === template.id);
+            if (existingIndex >= 0) {
+                state.templates[existingIndex] = template;
+            } else {
+                state.templates.push(template);
+            }
+
+            state.currentTemplateId = template.id;
+            await persistState();
+            renderTemplateList();
+            showToast("Saved!");
+            
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        };
+
+        window.createNew = async function() {
+            if (state.currentVariables.length > 0 && !confirm("Clear current work?")) return;
+            if (editor) editor.innerHTML = "";
+            state.currentVariables = [];
+            state.currentTemplateId = null;
+            renderSidebar();
+            renderTemplateList();
+            if (editor) editor.focus();
+        };
+
+        window.loadTemplateUI = function(id) {
+            const t = state.templates.find(x => x.id === id);
+            if (!t) return;
+            
+            state.currentTemplateId = t.id;
+            if (editor) editor.innerHTML = t.html;
+            state.currentVariables = t.variables || [];
+            renderSidebar();
+            renderTemplateList();
+        };
+
+        window.removeTemplate = async function(id, e) {
+            if (e) e.stopPropagation();
+            if (!confirm("Delete this template?")) return;
+            
+            state.templates = state.templates.filter(t => t.id !== id);
+            await persistState();
+            
+            if (state.currentTemplateId === id) {
+                createNew();
+            } else {
+                renderTemplateList();
+            }
+        };
+
+        function renderTemplateList() {
+            if (!templateList) return;
+            
+            templateList.innerHTML = '';
+            
+            const closeAllContainer = document.getElementById('closeAllFoldersContainer');
+            const foldersWithTemplates = state.folders.filter(f => 
+                state.templates.some(t => t.folderId === f.id)
+            );
+            
+            if (closeAllContainer) {
+                if (foldersWithTemplates.length > 0) {
+                    closeAllContainer.classList.remove('hidden');
+                } else {
+                    closeAllContainer.classList.add('hidden');
+                }
+            }
+            
+            state.folders.forEach(folder => {
+                const folderTemplates = state.templates.filter(t => t.folderId === folder.id);
+                if (folderTemplates.length === 0) return;
+                
+                const details = document.createElement('details');
+                details.open = false;
+                details.className = "group mb-2";
+
+                const summary = document.createElement('summary');
+                summary.className = "flex items-center justify-between text-xs font-bold text-gray-500 uppercase tracking-wider p-2 hover:bg-slate-100 rounded cursor-pointer select-none dark:text-gray-400 dark:hover:bg-slate-800";
+                summary.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <svg class="arrow w-3 h-3 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <span>${folder.name} <span class="text-gray-300 font-normal">(${folderTemplates.length})</span></span>
+                    </div>
+                    <button onclick="deleteFolder('${folder.id}', event)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                `;
+                
+                const listDiv = document.createElement('div');
+                listDiv.className = "pl-2 border-l border-slate-200 ml-3 mt-1 space-y-1 dark:border-slate-700";
+                folderTemplates.forEach(t => listDiv.appendChild(createTemplateItem(t)));
+                
+                details.appendChild(summary);
+                details.appendChild(listDiv);
+                templateList.appendChild(details);
+            });
+
+            const uncategorized = state.templates.filter(t => !t.folderId);
+            if (uncategorized.length > 0) {
+                const div = document.createElement('div');
+                div.innerHTML = `<div class="px-2 py-1 mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider dark:text-gray-500">Uncategorized</div>`;
+                const listDiv = document.createElement('div');
+                listDiv.className = "space-y-1";
+                uncategorized.forEach(t => listDiv.appendChild(createTemplateItem(t)));
+                div.appendChild(listDiv);
+                templateList.appendChild(div);
+            }
+            
+            if (state.templates.length === 0) {
+                templateList.innerHTML = `
+                    <div class="text-center mt-8 text-gray-400 dark:text-gray-500 p-4">
+                        <p class="text-sm mb-2">No templates yet</p>
+                        <p class="text-xs opacity-75">Create your first template</p>
+                    </div>
+                `;
+            }
+        }
+
+        function createTemplateItem(t) {
+            const isActive = state.currentTemplateId === t.id;
+            const div = document.createElement('div');
+            div.className = `group flex justify-between items-center p-2 rounded cursor-pointer transition select-none touch-btn ${
+                isActive 
+                ? 'bg-indigo-100 text-indigo-900 border border-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:border-indigo-800' 
+                : 'hover:bg-slate-100 text-slate-600 dark:hover:bg-slate-800 dark:text-slate-300'
+            }`;
+            
+            div.onclick = () => {
+                loadTemplateUI(t.id);
+                if (window.innerWidth < 768) toggleSidebar();
+            };
+            
+            div.innerHTML = `
+                <span class="flex-1 truncate text-sm font-medium">${escapeHtml(t.name)}</span>
+                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="moveTemplate('${t.id}', event)" title="Move" class="text-xs text-slate-400 hover:text-indigo-600 px-1 py-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                        </svg>
+                    </button>
+                    <button onclick="removeTemplate('${t.id}', event)" title="Delete" class="text-xs text-slate-400 hover:text-red-600 px-1 py-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            `;
+            return div;
+        }
+
+        window.copyFinalText = function() {
+            const btn = document.getElementById('copyBtn');
+            if (!btn) return;
+            
+            const originalHTML = btn.innerHTML;
+            
+            if (!editor) return;
+            const cleanText = editor.innerText;
+            
+            navigator.clipboard.writeText(cleanText).then(() => {
+                btn.innerHTML = `<span class="font-bold">✓</span>`;
+                btn.classList.remove('bg-indigo-600');
+                btn.classList.add('bg-green-600');
+                showToast("Copied to clipboard!");
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.add('bg-indigo-600');
+                    btn.classList.remove('bg-green-600');
+                }, 2000);
+            }).catch(err => {
+                console.error('[TypeFill] Copy failed:', err);
+                showToast('Copy failed');
+            });
+        };
+
+        window.showStatus = function(msg) {
+            if (!statusInd) return;
+            const original = statusInd.innerText;
+            statusInd.innerText = msg;
+            setTimeout(() => statusInd.innerText = "Ready", 3000);
+        };
+    </script>
+</body>
+</html>
