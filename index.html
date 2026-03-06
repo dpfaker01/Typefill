@@ -6,20 +6,16 @@
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
     
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TypeFill">
     <meta name="application-name" content="TypeFill">
     <meta name="msapplication-TileColor" content="#4f46e5">
     
-    <meta name="description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.">
+    <meta name="description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds. Works completely offline.">
     <meta name="keywords" content="template, text expander, mail merge, snippet, auto fill, form letter, copy paste, variable, shortcut">
     <meta name="author" content="TypeFill">
-    
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="TypeFill - Create & Reuse Fill-in Templates">
-    <meta property="og:description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.">
-    <meta property="og:image" content="icons/icon-512x512.png">
     
     <title>TypeFill - Create & Reuse Fill-in Templates</title>
     
@@ -430,6 +426,7 @@
         let db = null;
         let deferredPrompt = null;
 
+        // Native App feel setup: Prevents zoom on double-tap and pinch zoom
         (function preventZoom() {
             let lastTouchEnd = 0;
             document.addEventListener('touchend', function(e) {
@@ -445,17 +442,11 @@
                     e.preventDefault();
                 }
             }, { passive: false });
-
-            document.addEventListener('gesturestart', function(e) {
-                e.preventDefault();
-            }, { passive: false });
             
-            document.addEventListener('gesturechange', function(e) {
-                e.preventDefault();
-            }, { passive: false });
-            
-            document.addEventListener('gestureend', function(e) {
-                e.preventDefault();
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
             }, { passive: false });
         })();
 
@@ -935,6 +926,7 @@
             renderTemplateList();
         };
 
+        // EXPORT JSON FIX - Solves Mobile APK / Android WebView download restrictions
         window.exportData = async function() {
             if (state.templates.length === 0 && state.folders.length === 0) {
                 alert("Nothing to export!");
@@ -943,26 +935,54 @@
             
             const exportObj = {
                 app: "TypeFill",
-                version: "1.0.0",
+                version: "1.1.0",
                 exportDate: new Date().toISOString(),
                 folders: state.folders,
                 templates: state.templates
             };
 
             const dataStr = JSON.stringify(exportObj, null, 2);
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const fileName = `typefill_backup_${dateStr}.json`;
             const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            const date = new Date().toISOString().slice(0, 10);
-            a.href = url;
-            a.download = `typefill_backup_${date}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showToast("Exported successfully!");
+
+            // 1. Try Native Web Share API (Best for Mobile APKs/PWAs - bypasses WebView restrictions)
+            try {
+                const file = new File([blob], fileName, { type: "application/json" });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'TypeFill Backup',
+                        text: 'My TypeFill templates backup.'
+                    });
+                    showToast("Export shared successfully!");
+                    return; // Stop here if share succeeded
+                }
+            } catch (err) {
+                console.log('[TypeFill] Web Share API unavailable or cancelled:', err);
+                if (err.name === 'AbortError') return; // User cancelled share, don't fall back
+            }
+
+            // 2. Fallback to standard Blob Download (Best for Desktop/Standard Browsers)
+            try {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 150);
+                
+                showToast("Export downloaded successfully!");
+            } catch (err) {
+                console.error("[TypeFill] Standard download failed:", err);
+                alert("Failed to export. If you're inside an app, try using the standard browser.");
+            }
         };
 
         async function finalizeImport(msg) {
