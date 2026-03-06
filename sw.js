@@ -1,4 +1,4 @@
-const CACHE_NAME = 'typefill-v2'; // Bumped version for updates
+const CACHE_NAME = 'typefill-v3-offline';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -11,18 +11,16 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-    console.log('[TypeFill SW] Installing...');
+    console.log('[TypeFill SW] Installing Service Worker...');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('[TypeFill SW] Caching static assets');
                 return cache.addAll(STATIC_ASSETS);
             })
-            .catch((err) => {
-                console.log('[TypeFill SW] Cache failed:', err);
-            })
+            .then(() => self.skipWaiting())
+            .catch((err) => console.error('[TypeFill SW] Cache failed:', err))
     );
-    self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -30,46 +28,71 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
-                cacheNames
-                    .filter((name) => name !== CACHE_NAME)
-                    .map((name) => caches.delete(name))
+                cacheNames.map((cacheName) => {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('[TypeFill SW] Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
             );
-        })
+        }).then(() => self.clients.claim())
     );
-    self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-    if (event.request.method !== 'GET') return;
-    
-    const url = new URL(event.request.url);
-    if (url.origin !== self.location.origin) {
-        return;
-    }
+    const { request } = event;
+    const url = new URL(request.url);
+
+    if (request.method !== 'GET') return;
+    if (url.protocol === 'chrome-extension:') return;
 
     event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                if (response) {
-                    return response;
+        caches.match(request).then((cachedResponse) => {
+            if (cachedResponse) {
+                // If it's a CDN resource (Tailwind, Fonts), re-fetch it in the background to keep it updated
+                if (isCDNResource(url)) {
+                    fetchAndCache(request); 
                 }
-                
-                return fetch(event.request)
-                    .then((networkResponse) => {
-                        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                            return networkResponse;
-                        }
-                        
-                        const responseToCache = networkResponse.clone();
-                        caches.open(CACHE_NAME).then((cache) => {
-                            cache.put(event.request, responseToCache);
-                        });
-                        
-                        return networkResponse;
-                    })
-                    .catch(() => {
-                        console.log('[TypeFill SW] Network failed for:', event.request.url);
-                    });
-            })
+                return cachedResponse;
+            }
+            return fetchAndCache(request);
+        }).catch(() => {
+            if (request.mode === 'navigate') {
+                return caches.match('./index.html');
+            }
+            return new Response('Offline - Resource not available', {
+                status: 503,
+                statusText: 'Service Unavailable'
+            });
+        })
     );
 });
+
+async function fetchAndCache(request) {
+    try {
+        const networkResponse = await fetch(request);
+
+        // Allow caching if status is 200 OR if it's an opaque response (type === 'opaque') specifically for cross-origin CDNs
+        if (!networkResponse || (networkResponse.status !== 200 && networkResponse.type !== 'opaque')) {
+            return networkResponse;
+        }
+
+        const responseToCache = networkResponse.clone();
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(request, responseToCache);
+
+        return networkResponse;
+    } catch (error) {
+        console.error('[TypeFill SW] Fetch failed:', error);
+        throw error;
+    }
+}
+
+function isCDNResource(url) {
+    const cdnDomains = [
+        'cdn.tailwindcss.com',
+        'fonts.googleapis.com',
+        'fonts.gstatic.com'
+    ];
+    return cdnDomains.some(domain => url.hostname.includes(domain));
+}
