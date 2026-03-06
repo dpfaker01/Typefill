@@ -346,18 +346,12 @@
 
             <div id="templateList" class="flex-1 overflow-y-auto p-2 space-y-1 scrollable-y"></div>
 
-            <div class="p-3 border-t border-gray-200 bg-white space-y-2 dark:bg-slate-800 dark:border-slate-700">
-                <button onclick="document.getElementById('importFileInput').click()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 py-3 rounded transition dark:bg-slate-700 dark:text-slate-300 touch-btn">
+            <div class="p-4 border-t border-gray-200 bg-white space-y-2 dark:bg-slate-800 dark:border-slate-700">
+                <button onclick="openBackupModal()" class="w-full flex items-center justify-center gap-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 py-3 rounded-lg transition dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 touch-btn">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                     </svg>
-                    Import JSON
-                </button>
-                <button onclick="exportData()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 py-3 rounded transition dark:bg-slate-700 dark:text-slate-300 touch-btn">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    Export JSON
+                    Data Backup & Restore
                 </button>
             </div>
         </aside>
@@ -379,7 +373,7 @@
                 </span>
                 <button onclick="toggleVariablesPanel()" class="md:hidden touch-btn p-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4"/>
                     </svg>
                 </button>
             </div>
@@ -412,8 +406,41 @@
         </aside>
     </main>
 
+    <!-- Backup & Restore Modal -->
+    <div id="backupModal" class="hidden fixed inset-0 bg-slate-900/50 z-[200] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Data Backup</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">Save or restore your templates safely.</p>
+            
+            <div class="space-y-4">
+                <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export Data
+                    </h4>
+                    <div class="flex gap-2">
+                        <button onclick="downloadBackup()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition touch-btn shadow-sm">Save File</button>
+                        <button onclick="copyBackupToClipboard()" class="flex-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700 text-xs font-semibold py-2.5 px-3 rounded-lg transition touch-btn shadow-sm">Copy Text</button>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        Import Data
+                    </h4>
+                    <div class="flex gap-2">
+                        <button onclick="document.getElementById('importFileInput').click()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition touch-btn shadow-sm">Open File</button>
+                        <button onclick="pasteBackupFromClipboard()" class="flex-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700 text-xs font-semibold py-2.5 px-3 rounded-lg transition touch-btn shadow-sm">Paste Text</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="closeBackupModal()" class="mt-5 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 text-sm font-semibold py-3 rounded-lg transition touch-btn">Close</button>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
-    
     <input type="file" id="importFileInput" accept=".json" class="hidden">
 
     <script>
@@ -449,64 +476,6 @@
                 }
             }, { passive: false });
         })();
-
-        window.handleImport = async function(input) {
-            console.log('[TypeFill] Import started');
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    let newTemplates = [];
-                    let newFolders = [];
-
-                    if (Array.isArray(data)) {
-                        newTemplates = data;
-                    } else if (data.templates) {
-                        newTemplates = data.templates;
-                        newFolders = data.folders || [];
-                    } else {
-                        throw new Error("Invalid format");
-                    }
-
-                    const shouldOverwrite = confirm("Click OK to OVERWRITE current data.\nClick CANCEL to MERGE with existing data.");
-                    
-                    if (shouldOverwrite) {
-                        state.templates = newTemplates;
-                        state.folders = newFolders;
-                        await finalizeImport("Data overwritten successfully!");
-                    } else {
-                        newFolders.forEach(nf => {
-                            if (!state.folders.find(cf => cf.id === nf.id)) {
-                                state.folders.push(nf);
-                            }
-                        });
-                        newTemplates.forEach(nt => {
-                            const idx = state.templates.findIndex(curr => curr.id === nt.id);
-                            if (idx > -1) {
-                                state.templates[idx] = nt;
-                            } else {
-                                state.templates.push(nt);
-                            }
-                        });
-                        await finalizeImport("Data merged successfully!");
-                    }
-                } catch (err) {
-                    console.error('[TypeFill] Import error:', err);
-                    alert("Error loading file: " + err.message);
-                }
-                input.value = '';
-            };
-            
-            reader.onerror = () => {
-                alert("Error reading file");
-                input.value = '';
-            };
-            
-            reader.readAsText(file);
-        };
 
         async function initDatabase() {
             return new Promise((resolve, reject) => {
@@ -926,62 +895,173 @@
             renderTemplateList();
         };
 
-        // EXPORT JSON FIX - Solves Mobile APK / Android WebView download restrictions
-        window.exportData = async function() {
+        // ==========================================
+        // BACKUP & RESTORE FIX FOR APKs
+        // ==========================================
+
+        window.openBackupModal = function() {
+            document.getElementById('backupModal').classList.remove('hidden');
+            if (window.innerWidth < 768) toggleSidebar(); // Close sidebar if on mobile
+        };
+
+        window.closeBackupModal = function() {
+            document.getElementById('backupModal').classList.add('hidden');
+        };
+
+        function getExportDataStr() {
             if (state.templates.length === 0 && state.folders.length === 0) {
                 alert("Nothing to export!");
-                return;
+                return null;
             }
-            
             const exportObj = {
                 app: "TypeFill",
-                version: "1.1.0",
+                version: "1.2.0",
                 exportDate: new Date().toISOString(),
                 folders: state.folders,
                 templates: state.templates
             };
+            return JSON.stringify(exportObj, null, 2);
+        }
 
-            const dataStr = JSON.stringify(exportObj, null, 2);
+        window.downloadBackup = async function() {
+            const dataStr = getExportDataStr();
+            if (!dataStr) return;
+
             const dateStr = new Date().toISOString().slice(0, 10);
             const fileName = `typefill_backup_${dateStr}.json`;
-            const blob = new Blob([dataStr], { type: "application/json" });
 
-            // 1. Try Native Web Share API (Best for Mobile APKs/PWAs - bypasses WebView restrictions)
+            // 1. Try Native File Share (Bypasses WebView blockers)
             try {
+                const blob = new Blob([dataStr], { type: "application/json" });
                 const file = new File([blob], fileName, { type: "application/json" });
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
-                        title: 'TypeFill Backup',
-                        text: 'My TypeFill templates backup.'
+                        title: 'TypeFill Backup'
                     });
-                    showToast("Export shared successfully!");
-                    return; // Stop here if share succeeded
+                    showToast("File shared successfully!");
+                    return;
                 }
             } catch (err) {
-                console.log('[TypeFill] Web Share API unavailable or cancelled:', err);
-                if (err.name === 'AbortError') return; // User cancelled share, don't fall back
+                if (err.name === 'AbortError') return;
             }
 
-            // 2. Fallback to standard Blob Download (Best for Desktop/Standard Browsers)
+            // 2. Try Standard Download for Web/PC
             try {
-                const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
-                a.href = url;
+                a.href = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
                 a.download = fileName;
                 document.body.appendChild(a);
                 a.click();
-                
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 150);
-                
-                showToast("Export downloaded successfully!");
+                document.body.removeChild(a);
+                showToast("Download triggered!");
             } catch (err) {
-                console.error("[TypeFill] Standard download failed:", err);
-                alert("Failed to export. If you're inside an app, try using the standard browser.");
+                console.error("Download failed:", err);
+                showToast("Download blocked. Please use 'Copy Text'.");
+            }
+        };
+
+        window.copyBackupToClipboard = async function() {
+            const dataStr = getExportDataStr();
+            if (!dataStr) return;
+
+            try {
+                await navigator.clipboard.writeText(dataStr);
+                showToast("Backup copied to clipboard!");
+            } catch (err) {
+                // Fallback if clipboard API is strictly blocked
+                const textArea = document.createElement("textarea");
+                textArea.value = dataStr;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast("Backup copied to clipboard!");
+                } catch (e) {
+                    alert("Could not copy automatically. Your app blocks clipboard access.");
+                }
+                document.body.removeChild(textArea);
+            }
+        };
+
+        window.pasteBackupFromClipboard = async function() {
+            try {
+                let text = await navigator.clipboard.readText();
+                if (!text || !text.trim().startsWith('{')) {
+                    throw new Error("No valid JSON in clipboard");
+                }
+                processImportData(text);
+            } catch (err) {
+                // Manual prompt fallback if clipboard read is blocked
+                let text = prompt("Please paste your backup JSON text here:");
+                if (text) processImportData(text);
+            }
+        };
+
+        window.handleImport = async function(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                await processImportData(e.target.result);
+                input.value = '';
+            };
+            
+            reader.onerror = () => {
+                alert("Error reading file");
+                input.value = '';
+            };
+            
+            reader.readAsText(file);
+        };
+
+        window.processImportData = async function(jsonText) {
+            if (!jsonText || !jsonText.trim().startsWith('{')) {
+                alert("Invalid backup data format.");
+                return;
+            }
+            try {
+                const data = JSON.parse(jsonText);
+                let newTemplates = [];
+                let newFolders = [];
+
+                if (Array.isArray(data)) {
+                    newTemplates = data;
+                } else if (data.templates) {
+                    newTemplates = data.templates;
+                    newFolders = data.folders || [];
+                } else {
+                    throw new Error("Invalid format");
+                }
+
+                const shouldOverwrite = confirm("Click OK to OVERWRITE current data.\nClick CANCEL to MERGE with existing data.");
+                
+                if (shouldOverwrite) {
+                    state.templates = newTemplates;
+                    state.folders = newFolders;
+                    await finalizeImport("Data overwritten successfully!");
+                } else {
+                    newFolders.forEach(nf => {
+                        if (!state.folders.find(cf => cf.id === nf.id)) {
+                            state.folders.push(nf);
+                        }
+                    });
+                    newTemplates.forEach(nt => {
+                        const idx = state.templates.findIndex(curr => curr.id === nt.id);
+                        if (idx > -1) {
+                            state.templates[idx] = nt;
+                        } else {
+                            state.templates.push(nt);
+                        }
+                    });
+                    await finalizeImport("Data merged successfully!");
+                }
+                closeBackupModal();
+            } catch (err) {
+                console.error('[TypeFill] Import error:', err);
+                alert("Error loading data: " + err.message);
             }
         };
 
@@ -993,6 +1073,10 @@
             }
             showToast(msg);
         }
+
+        // ==========================================
+        // EDITOR LOGIC
+        // ==========================================
 
         const editor = document.getElementById('editor');
         const floater = document.getElementById('floater');
