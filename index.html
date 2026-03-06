@@ -473,7 +473,7 @@
             }, { passive: false });
         })();
 
-        // PWA Service Worker Registration with Update Handling - FROM BP TRACKER
+        // PWA Service Worker Registration with Update Handling
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js', {
@@ -483,12 +483,10 @@
                 .then(reg => {
                     console.log('[TypeFill] Service Worker registered');
                     
-                    // Check for updates - BP TRACKER STYLE
                     reg.addEventListener('updatefound', () => {
                         const newWorker = reg.installing;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // New update available
                                 showUpdateNotification();
                             }
                         });
@@ -496,7 +494,6 @@
                 })
                 .catch(err => console.log('[TypeFill] Service Worker registration failed:', err));
                 
-                // Listen for messages from SW
                 navigator.serviceWorker.addEventListener('message', (event) => {
                     if (event.data === 'UPDATE_AVAILABLE') {
                         showUpdateNotification();
@@ -959,6 +956,7 @@
             renderTemplateList();
         };
 
+        // --- UPDATED EXPORT FUNCTION FOR APK & WEBVIEW FIXES ---
         window.exportData = async function() {
             if (state.templates.length === 0 && state.folders.length === 0) {
                 alert("Nothing to export!");
@@ -974,19 +972,49 @@
             };
 
             const dataStr = JSON.stringify(exportObj, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
             const date = new Date().toISOString().slice(0, 10);
-            a.href = url;
-            a.download = `typefill_backup_${date}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showToast("Exported successfully!");
+            const fileName = `typefill_backup_${date}.json`;
+            const blob = new Blob([dataStr], { type: "application/json" });
+
+            // 1. Try Native Mobile OS Sharing (Perfect for Android WebViews/APK)
+            if (navigator.share) {
+                try {
+                    const file = new File([blob], fileName, { type: "application/json" });
+                    const canShare = navigator.canShare ? navigator.canShare({ files: [file] }) : true;
+                    
+                    if (canShare) {
+                        await navigator.share({
+                            title: 'TypeFill Backup',
+                            text: 'Your TypeFill backup file.',
+                            files: [file]
+                        });
+                        showToast("Export shared successfully!");
+                        return; // Stop here if native share works
+                    }
+                } catch (err) {
+                    console.log("[TypeFill] Native share aborted/unsupported, falling back...", err);
+                }
+            }
+
+            // 2. Standard Browser Fallback (For Chrome/Safari Desktop)
+            try {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                // Important fix: Force target self to override global target="_blank" which breaks WebView blob parsing
+                a.target = "_self"; 
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Add a slight delay before revoking to fix a bug in some mobile browsers
+                setTimeout(() => URL.revokeObjectURL(url), 500); 
+                showToast("Exported successfully!");
+            } catch (err) {
+                console.error('[TypeFill] Export fallback error:', err);
+                showToast("Export failed");
+            }
         };
 
         async function finalizeImport(msg) {
