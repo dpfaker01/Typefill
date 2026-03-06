@@ -49,7 +49,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         caches.match(request).then((cachedResponse) => {
             if (cachedResponse) {
-                // If it's a CDN resource (Tailwind, Fonts), re-fetch it in the background to keep it updated
+                // Background fetch to keep CDNs fresh while working offline instantly
                 if (isCDNResource(url)) {
                     fetchAndCache(request); 
                 }
@@ -72,7 +72,7 @@ async function fetchAndCache(request) {
     try {
         const networkResponse = await fetch(request);
 
-        // Allow caching if status is 200 OR if it's an opaque response (type === 'opaque') specifically for cross-origin CDNs
+        // Allow caching if status is 200 OR if it's an opaque response for cross-origin CDNs
         if (!networkResponse || (networkResponse.status !== 200 && networkResponse.type !== 'opaque')) {
             return networkResponse;
         }
