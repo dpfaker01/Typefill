@@ -373,7 +373,7 @@
                 </span>
                 <button onclick="toggleVariablesPanel()" class="md:hidden touch-btn p-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                     </svg>
                 </button>
             </div>
@@ -901,7 +901,7 @@
 
         window.openBackupModal = function() {
             document.getElementById('backupModal').classList.remove('hidden');
-            if (window.innerWidth < 768) toggleSidebar(); // Close sidebar if on mobile
+            if (window.innerWidth < 768) toggleSidebar(); 
         };
 
         window.closeBackupModal = function() {
@@ -923,42 +923,26 @@
             return JSON.stringify(exportObj, null, 2);
         }
 
-        window.downloadBackup = async function() {
+        window.downloadBackup = function() {
             const dataStr = getExportDataStr();
             if (!dataStr) return;
 
             const dateStr = new Date().toISOString().slice(0, 10);
             const fileName = `typefill_backup_${dateStr}.json`;
 
-            // 1. Try Native File Share (Bypasses WebView blockers)
             try {
-                const blob = new Blob([dataStr], { type: "application/json" });
-                const file = new File([blob], fileName, { type: "application/json" });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: 'TypeFill Backup'
-                    });
-                    showToast("File shared successfully!");
-                    return;
-                }
-            } catch (err) {
-                if (err.name === 'AbortError') return;
-            }
-
-            // 2. Try Standard Download for Web/PC
-            try {
+                // Exact matching string formatting to BP Tracker (which works natively offline in your APK wrapper)
                 const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+                a.href = "data:text/json;charset=utf-8," + encodeURIComponent(dataStr);
                 a.download = fileName;
                 document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
-                showToast("Download triggered!");
+                a.remove();
+                
+                showToast("Backup downloaded!");
             } catch (err) {
-                console.error("Download failed:", err);
-                showToast("Download blocked. Please use 'Copy Text'.");
+                console.error("Export error:", err);
+                showToast("Download failed. Please use 'Copy Text' instead.");
             }
         };
 
