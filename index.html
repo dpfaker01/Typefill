@@ -714,7 +714,7 @@
                     });
                 }
                 
-                showToast('TypeFill Ready - Offline Mode');
+                showToast('TypeFill Ready');
             } catch (err) {
                 console.error('Initialization error:', err);
                 showToast('Error loading app');
@@ -956,7 +956,7 @@
             renderTemplateList();
         };
 
-        // --- UPDATED EXPORT FUNCTION FOR APK & WEBVIEW FIXES ---
+        // --- NEW UPDATED EXPORT FUNCTION ---
         window.exportData = async function() {
             if (state.templates.length === 0 && state.folders.length === 0) {
                 alert("Nothing to export!");
@@ -974,46 +974,54 @@
             const dataStr = JSON.stringify(exportObj, null, 2);
             const date = new Date().toISOString().slice(0, 10);
             const fileName = `typefill_backup_${date}.json`;
-            const blob = new Blob([dataStr], { type: "application/json" });
 
-            // 1. Try Native Mobile OS Sharing (Perfect for Android WebViews/APK)
-            if (navigator.share) {
+            // Detect mobile OS - this is crucial because desktop browsers pretend they have navigator.share but fail with files
+            const isMobileOS = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            // 1. Mobile Android/iOS APK Fallback (Native Share Sheet)
+            if (isMobileOS && navigator.share) {
                 try {
+                    const blob = new Blob([dataStr], { type: "application/json" });
                     const file = new File([blob], fileName, { type: "application/json" });
-                    const canShare = navigator.canShare ? navigator.canShare({ files: [file] }) : true;
                     
-                    if (canShare) {
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             title: 'TypeFill Backup',
-                            text: 'Your TypeFill backup file.',
                             files: [file]
                         });
                         showToast("Export shared successfully!");
-                        return; // Stop here if native share works
+                        return; // Successfully shared via native pop-up, exit function.
                     }
                 } catch (err) {
-                    console.log("[TypeFill] Native share aborted/unsupported, falling back...", err);
+                    console.log("[TypeFill] Native mobile share failed, falling back to direct download...", err);
                 }
             }
 
-            // 2. Standard Browser Fallback (For Chrome/Safari Desktop)
+            // 2. Desktop Browser & Ultimate Fallback (Data URI Download bypasses strict WebViews)
             try {
-                const url = URL.createObjectURL(blob);
+                // Using data: URI instead of Blob URL bypasses strict CORS/Target blocks entirely
+                const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+                
                 const a = document.createElement('a');
-                a.href = url;
+                a.style.display = 'none'; // Hidden
+                a.href = dataUri;
                 a.download = fileName;
-                // Important fix: Force target self to override global target="_blank" which breaks WebView blob parsing
-                a.target = "_self"; 
+                
+                // Force target to current frame, overriding the <base target="_blank"> which breaks downloads
+                a.target = "_top"; 
+                
                 document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
                 
-                // Add a slight delay before revoking to fix a bug in some mobile browsers
-                setTimeout(() => URL.revokeObjectURL(url), 500); 
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                }, 100);
+                
                 showToast("Exported successfully!");
             } catch (err) {
                 console.error('[TypeFill] Export fallback error:', err);
-                showToast("Export failed");
+                showToast("Export failed. Please check your browser settings.");
             }
         };
 
@@ -1277,7 +1285,7 @@
             state.currentTemplateId = template.id;
             await persistState();
             renderTemplateList();
-            showToast("Saved! (Offline)");
+            showToast("Saved!");
             
             if (window.innerWidth < 768) {
                 toggleSidebar();
@@ -1453,7 +1461,7 @@
             if (!statusInd) return;
             const original = statusInd.innerText;
             statusInd.innerText = msg;
-            setTimeout(() => statusInd.innerText = "Ready (Offline)", 3000);
+            setTimeout(() => statusInd.innerText = "Ready", 3000);
         };
     </script>
 </body>
