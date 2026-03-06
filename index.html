@@ -6,7 +6,6 @@
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
     
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TypeFill">
@@ -55,16 +54,9 @@
     </script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-
         html {
             touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
@@ -263,7 +255,6 @@
             transition: transform 0.2s ease;
         }
     </style>
-<base target="_blank">
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
@@ -430,10 +421,6 @@
     <input type="file" id="importFileInput" accept=".json" class="hidden">
 
     <script>
-        // ==========================================
-        //  TYPEFILL PWA - FULL OFFLINE VERSION
-        // ==========================================
-
         const DB_NAME = 'TypeFillDB';
         const DB_VERSION = 1;
         const STORE_TEMPLATES = 'templates';
@@ -443,7 +430,6 @@
         let db = null;
         let deferredPrompt = null;
 
-        // NATIVE APP BEHAVIOR: Prevent zoom gestures
         (function preventZoom() {
             let lastTouchEnd = 0;
             document.addEventListener('touchend', function(e) {
@@ -472,41 +458,6 @@
                 e.preventDefault();
             }, { passive: false });
         })();
-
-        // PWA Service Worker Registration with Update Handling
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js', {
-                    scope: './',
-                    updateViaCache: 'none'
-                })
-                .then(reg => {
-                    console.log('[TypeFill] Service Worker registered');
-                    
-                    reg.addEventListener('updatefound', () => {
-                        const newWorker = reg.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                showUpdateNotification();
-                            }
-                        });
-                    });
-                })
-                .catch(err => console.log('[TypeFill] Service Worker registration failed:', err));
-                
-                navigator.serviceWorker.addEventListener('message', (event) => {
-                    if (event.data === 'UPDATE_AVAILABLE') {
-                        showUpdateNotification();
-                    }
-                });
-            });
-        }
-
-        function showUpdateNotification() {
-            if (confirm('New version of TypeFill available! Reload to update?')) {
-                window.location.reload();
-            }
-        }
 
         window.handleImport = async function(input) {
             console.log('[TypeFill] Import started');
@@ -693,6 +644,10 @@
             try {
                 showToast('Loading TypeFill...');
                 
+                if ('serviceWorker' in navigator) {
+                    await registerServiceWorker();
+                }
+                
                 await initDatabase();
                 await requestPersistentStorage();
                 await loadTheme();
@@ -721,6 +676,30 @@
             }
         });
 
+        async function registerServiceWorker() {
+            try {
+                const registration = await navigator.serviceWorker.register('./sw.js', {
+                    scope: './',
+                    updateViaCache: 'none'
+                });
+                console.log('[TypeFill] SW registered:', registration.scope);
+                
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showToast('Update available! Refresh to update.');
+                            if (confirm('New version available! Reload now?')) {
+                                window.location.reload();
+                            }
+                        }
+                    });
+                });
+            } catch (err) {
+                console.log('[TypeFill] SW registration failed:', err);
+            }
+        }
+
         function setupInstallPrompt() {
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
@@ -741,7 +720,7 @@
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    showToast('TypeFill installed! Works offline now.');
+                    showToast('TypeFill installed!');
                     document.getElementById('installBanner').classList.add('hidden');
                 }
                 deferredPrompt = null;
@@ -824,7 +803,7 @@
                     DataLayer.saveTemplates(state.templates),
                     DataLayer.saveFolders(state.folders)
                 ]);
-                console.log('[TypeFill] State persisted to IndexedDB');
+                console.log('[TypeFill] State persisted');
             } catch (err) {
                 console.error('[TypeFill] Save error:', err);
                 showToast('Failed to save data');
@@ -956,7 +935,6 @@
             renderTemplateList();
         };
 
-        // --- NEW UPDATED EXPORT FUNCTION ---
         window.exportData = async function() {
             if (state.templates.length === 0 && state.folders.length === 0) {
                 alert("Nothing to export!");
@@ -965,64 +943,26 @@
             
             const exportObj = {
                 app: "TypeFill",
-                version: "2.0.0",
+                version: "1.0.0",
                 exportDate: new Date().toISOString(),
                 folders: state.folders,
                 templates: state.templates
             };
 
             const dataStr = JSON.stringify(exportObj, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
             const date = new Date().toISOString().slice(0, 10);
-            const fileName = `typefill_backup_${date}.json`;
-
-            // Detect mobile OS - this is crucial because desktop browsers pretend they have navigator.share but fail with files
-            const isMobileOS = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-            // 1. Mobile Android/iOS APK Fallback (Native Share Sheet)
-            if (isMobileOS && navigator.share) {
-                try {
-                    const blob = new Blob([dataStr], { type: "application/json" });
-                    const file = new File([blob], fileName, { type: "application/json" });
-                    
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            title: 'TypeFill Backup',
-                            files: [file]
-                        });
-                        showToast("Export shared successfully!");
-                        return; // Successfully shared via native pop-up, exit function.
-                    }
-                } catch (err) {
-                    console.log("[TypeFill] Native mobile share failed, falling back to direct download...", err);
-                }
-            }
-
-            // 2. Desktop Browser & Ultimate Fallback (Data URI Download bypasses strict WebViews)
-            try {
-                // Using data: URI instead of Blob URL bypasses strict CORS/Target blocks entirely
-                const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-                
-                const a = document.createElement('a');
-                a.style.display = 'none'; // Hidden
-                a.href = dataUri;
-                a.download = fileName;
-                
-                // Force target to current frame, overriding the <base target="_blank"> which breaks downloads
-                a.target = "_top"; 
-                
-                document.body.appendChild(a);
-                a.click();
-                
-                // Clean up
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                }, 100);
-                
-                showToast("Exported successfully!");
-            } catch (err) {
-                console.error('[TypeFill] Export fallback error:', err);
-                showToast("Export failed. Please check your browser settings.");
-            }
+            a.href = url;
+            a.download = `typefill_backup_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast("Exported successfully!");
         };
 
         async function finalizeImport(msg) {
