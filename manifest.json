@@ -2,13 +2,14 @@
   "name": "TypeFill - Create & Reuse Fill-in Templates",
   "short_name": "TypeFill",
   "description": "Stop retyping the same emails, reviews, and messages. Create smart templates with variables, fill them in seconds.",
-  "start_url": "./",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4f46e5",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "scope": "./",
   "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "./icons/icon-16x16.png",
@@ -75,9 +76,12 @@
       "name": "New Template",
       "short_name": "New",
       "description": "Create a new template",
-      "url": "./?action=new",
+      "url": "./index.html?action=new",
       "icons": [{ "src": "./icons/icon-96x96.png", "sizes": "96x96" }]
     }
+  ],
+  "features": [
+    "offline"
   ],
   "related_applications": [],
   "prefer_related_applications": false
