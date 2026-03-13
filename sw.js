@@ -1,13 +1,12 @@
-// TypeFill Pro Service Worker v5.1.0
-// FORCE UPDATE - Version bump triggers immediate cache refresh
-// Version: 5.1.0
-// Feature: TypeFill Pro - Unlimited Variables, Choices, and Privacy Masks
+// TypeFill Pro Service Worker v5.2.0
+// FORCE UPDATE - Sub-folders, Lock/Unlock, Quick Actions
+// Version: 5.2.0
+// Feature: Sub-folders, Editor Lock, Quick Action Buttons, Folder Sorting
 // Last Updated: 2025-01-11
-// FIX: Network-first strategy for HTML to ensure updates are applied immediately
 
-const CACHE_NAME = 'typefill-pro-v5.1.0';
-const RUNTIME_CACHE = 'typefill-pro-runtime-v5.1.0';
-const VERSION = '5.1.0';
+const CACHE_NAME = 'typefill-pro-v5.2.0';
+const RUNTIME_CACHE = 'typefill-pro-runtime-v5.2.0';
+const VERSION = '5.2.0';
 const BUILD_TIMESTAMP = Date.now();
 
 // Static assets to cache on install
@@ -31,16 +30,17 @@ const STATIC_ASSETS = [
 // External resources to cache for offline use
 const EXTERNAL_ASSETS = [
     'https://cdn.tailwindcss.com',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+    'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap',
+    'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap'
 ];
 
-// Install event - cache all static assets
+// Install event
 self.addEventListener('install', (event) => {
     console.log('[TypeFill SW v' + VERSION + '] Installing...');
     
     event.waitUntil(
         Promise.all([
-            // Cache static assets
             caches.open(CACHE_NAME).then((cache) => {
                 console.log('[TypeFill SW] Caching static assets');
                 return cache.addAll(STATIC_ASSETS).catch(err => {
@@ -48,7 +48,6 @@ self.addEventListener('install', (event) => {
                     return Promise.resolve();
                 });
             }),
-            // Cache external assets
             caches.open(RUNTIME_CACHE).then((cache) => {
                 console.log('[TypeFill SW] Caching external assets');
                 return Promise.all(
@@ -67,13 +66,12 @@ self.addEventListener('install', (event) => {
             })
         ]).then(() => {
             console.log('[TypeFill SW v' + VERSION + '] Installation complete');
-            // Force the new service worker to activate immediately
             return self.skipWaiting();
         })
     );
 });
 
-// Activate event - clean up old caches and claim clients
+// Activate event
 self.addEventListener('activate', (event) => {
     console.log('[TypeFill SW v' + VERSION + '] Activating...');
     
@@ -89,10 +87,8 @@ self.addEventListener('activate', (event) => {
             );
         }).then(() => {
             console.log('[TypeFill SW v' + VERSION + '] Activation complete');
-            // Claim all clients immediately to force update
             return self.clients.claim();
         }).then(() => {
-            // Notify all clients about the update
             return self.clients.matchAll().then(clients => {
                 clients.forEach(client => {
                     client.postMessage({
@@ -106,22 +102,15 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch event - NETWORK FIRST for HTML, cache-first for other assets
+// Fetch event
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
     
-    // Skip non-GET requests
-    if (request.method !== 'GET') {
-        return;
-    }
+    if (request.method !== 'GET') return;
+    if (!url.protocol.startsWith('http')) return;
     
-    // Skip chrome-extension and other non-http(s) requests
-    if (!url.protocol.startsWith('http')) {
-        return;
-    }
-    
-    // For HTML/navigation requests: NETWORK-FIRST to ensure updates
+    // Network-first for HTML
     if (request.mode === 'navigate' || 
         request.headers.get('accept')?.includes('text/html') ||
         url.pathname.endsWith('.html')) {
@@ -129,7 +118,6 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             fetch(request)
                 .then((networkResponse) => {
-                    // Cache the fresh response
                     if (networkResponse && networkResponse.status === 200) {
                         const responseToCache = networkResponse.clone();
                         caches.open(CACHE_NAME).then((cache) => {
@@ -139,12 +127,8 @@ self.addEventListener('fetch', (event) => {
                     return networkResponse;
                 })
                 .catch(() => {
-                    // Network failed, try cache
                     return caches.match(request).then((cachedResponse) => {
-                        if (cachedResponse) {
-                            return cachedResponse;
-                        }
-                        // Return cached index.html for navigation
+                        if (cachedResponse) return cachedResponse;
                         return caches.match('./index.html');
                     });
                 })
@@ -152,14 +136,12 @@ self.addEventListener('fetch', (event) => {
         return;
     }
     
-    // For same-origin requests: Stale-while-revalidate strategy
+    // Stale-while-revalidate for same-origin
     if (url.origin === self.location.origin) {
         event.respondWith(
             caches.match(request).then((cachedResponse) => {
-                // Return cached version immediately
                 const fetchPromise = fetch(request)
                     .then((networkResponse) => {
-                        // Update cache with fresh response
                         if (networkResponse && networkResponse.status === 200) {
                             const responseToCache = networkResponse.clone();
                             caches.open(CACHE_NAME).then((cache) => {
@@ -168,21 +150,14 @@ self.addEventListener('fetch', (event) => {
                         }
                         return networkResponse;
                     })
-                    .catch((error) => {
-                        console.log('[TypeFill SW] Network fetch failed:', url.pathname);
-                        return cachedResponse;
-                    });
-                
-                // Return cached response or wait for network
+                    .catch(() => cachedResponse);
                 return cachedResponse || fetchPromise;
             })
         );
     } else {
-        // For external requests: Network-first with cache fallback
         event.respondWith(
             fetch(request)
                 .then((networkResponse) => {
-                    // Cache successful responses
                     if (networkResponse && networkResponse.status === 200) {
                         const responseToCache = networkResponse.clone();
                         caches.open(RUNTIME_CACHE).then((cache) => {
@@ -192,52 +167,25 @@ self.addEventListener('fetch', (event) => {
                     return networkResponse;
                 })
                 .catch(() => {
-                    // Try cache as fallback
-                    return caches.match(request).then((cachedResponse) => {
-                        if (cachedResponse) {
-                            return cachedResponse;
-                        }
-                        
-                        // Return offline response for fonts/styles
-                        if (request.destination === 'font' || request.destination === 'style') {
-                            return new Response('', { status: 200 });
-                        }
-                        
-                        return new Response('Offline', {
-                            status: 503,
-                            statusText: 'Service Unavailable'
-                        });
-                    });
+                    return caches.match(request);
                 })
         );
     }
 });
 
-// Handle messages from the main app
+// Message handling
 self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        console.log('[TypeFill SW] Received SKIP_WAITING message');
+    if (event.data?.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
     
-    if (event.data && event.data.type === 'GET_VERSION') {
-        event.ports[0].postMessage({ version: VERSION, timestamp: BUILD_TIMESTAMP });
+    if (event.data?.type === 'GET_VERSION') {
+        event.ports[0]?.postMessage({ version: VERSION, timestamp: BUILD_TIMESTAMP });
     }
     
-    if (event.data && event.data.type === 'CACHE_URLS') {
-        const urls = event.data.urls;
-        caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.addAll(urls);
-        });
-    }
-    
-    // Force clear all caches and reload
-    if (event.data && event.data.type === 'FORCE_UPDATE') {
-        console.log('[TypeFill SW] Force update requested');
+    if (event.data?.type === 'FORCE_UPDATE') {
         caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => caches.delete(cacheName))
-            );
+            return Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
         }).then(() => {
             self.skipWaiting();
             event.ports[0]?.postMessage({ success: true });
