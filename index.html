@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+    <!-- Issue 1 Fix: Enhanced standalone/fullscreen meta tags for Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TypeFill Pro">
+    <meta name="application-name" content="TypeFill Pro">
+    <meta name="msapplication-TileColor" content="#4f46e5">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="msapplication-starturl" content="./index.html">
+    <!-- Additional meta tags for fullscreen on Android -->
+    <meta name="browsermode" content="application">
+    <meta name="full-screen" content="yes">
+    <meta name="x5-fullscreen" content="true">
+    <meta name="360-fullscreen" content="true">
+    <meta name="description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables and choices, fill them in seconds. Works offline! Now with Privacy Masking.">
+    <meta name="keywords" content="template, text expander, mail merge, snippet, auto fill, form letter, copy paste, variable, shortcut, offline, privacy, password mask">
+    <meta name="author" content="TypeFill">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="TypeFill Pro - Create & Reuse Fill-in Templates">
+    <meta property="og:description" content="Stop retyping the same emails, reviews, and messages. Create smart templates with variables and choices, fill them in seconds. Works offline!">
+    <meta property="og:image" content="icons/icon-512x512.png?v=5.2.0">
+    <title>TypeFill Pro - Create & Reuse Fill-in Templates</title>
+    <link rel="manifest" href="./manifest.json?v=5.2.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32x32.png?v=5.2.0">
+    <link rel="icon" type="image/png" sizes="16x16" href="./icons/icon-16x16.png?v=5.2.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180x180.png?v=5.2.0">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: {
+                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
+                            300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1',
+                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        html { touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overscroll-behavior-y: none; -webkit-overflow-scrolling: touch; touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+        .dark body { background-color: #0f172a; color: #e2e8f0; }
+        .safe-area-top { padding-top: env(safe-area-inset-top); }
+        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        #editor { outline: none; line-height: 1.8; white-space: pre-wrap; min-height: 300px; font-size: 16px; -webkit-touch-callout: default; user-select: text; touch-action: manipulation; }
+        .token { background-color: #e0e7ff; color: #4338ca; border-bottom: 2px solid #4f46e5; padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; cursor: pointer; transition: all 0.2s; word-break: break-all; }
+        .dark .token { background-color: #312e81; color: #c7d2fe; border-bottom-color: #6366f1; }
+        .token:hover { background-color: #c7d2fe; }
+        .dark .token:hover { background-color: #4338ca; }
+        .masked-token { background: linear-gradient(135deg, #fef2f2, #fee2e2); color: #991b1b; border: 2px solid #dc2626; padding: 2px 24px 2px 8px; border-radius: 6px; font-weight: 600; display: inline-block; cursor: pointer; transition: all 0.2s; word-break: break-all; position: relative; min-height: 24px; box-shadow: 0 1px 3px rgba(220, 38, 38, 0.2); touch-action: manipulation; }
+        .masked-token::before { content: '🔒'; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 11px; opacity: 0.9; }
+        .masked-token::after { content: ''; position: absolute; right: 4px; top: 4px; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; border: 1px solid white; opacity: 0; transition: opacity 0.2s; }
+        .masked-token.copied::after { opacity: 1; }
+        .dark .masked-token { background: linear-gradient(135deg, #450a0a, #7f1d1d); color: #fecaca; border-color: #ef4444; box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3); }
+        .masked-token:hover { transform: scale(1.02); box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); border-color: #b91c1c; }
+        .masked-token:active { transform: scale(0.98); }
+        .choice-token { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; border: 2px solid #f59e0b; padding: 2px 20px 2px 6px; border-radius: 6px; font-weight: 600; display: inline-block; cursor: pointer; transition: all 0.2s; word-break: break-all; position: relative; min-height: 24px; touch-action: manipulation; }
+        .choice-token::after { content: '▼'; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 10px; opacity: 0.7; }
+        .dark .choice-token { background: linear-gradient(135deg, #78350f, #92400e); color: #fef3c7; border-color: #d97706; }
+        .choice-token:hover { transform: scale(1.02); box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3); }
+        .choice-token:active { transform: scale(0.98); }
+        /* Issue 3 Fix: Enhanced dropdown styles with better z-index and touch support */
+        .choice-dropdown { position: absolute; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); z-index: 10000; min-width: 120px; max-width: 250px; overflow: hidden; animation: dropIn 0.2s ease-out; touch-action: manipulation; }
+        .choice-dropdown:not(.hidden) { display: block !important; opacity: 1 !important; visibility: visible !important; }
+        .dark .choice-dropdown { background: #1e293b; border-color: #475569; }
+        @keyframes dropIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .choice-option { padding: 12px 14px; cursor: pointer; transition: background 0.15s; font-size: 14px; border-bottom: 1px solid #f3f4f6; min-height: 44px; display: flex; align-items: center; touch-action: manipulation; }
+        .dark .choice-option { border-bottom-color: #334155; }
+        .choice-option:last-child { border-bottom: none; }
+        .choice-option:hover, .choice-option:active { background: #fef3c7; color: #92400e; }
+        .dark .choice-option:hover, .dark .choice-option:active { background: #78350f; color: #fef3c7; }
+        .choice-option.selected { background: #f59e0b; color: white; font-weight: 600; }
+        .dark .choice-option.selected { background: #d97706; }
+        .hashtag { display: inline-flex; align-items: center; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; margin: 2px; cursor: pointer; transition: all 0.2s; }
+        .hashtag:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4); }
+        .hashtag-input { border: 2px dashed #c7d2fe; border-radius: 12px; padding: 4px 8px; font-size: 12px; background: transparent; color: #6366f1; min-width: 80px; transition: all 0.2s; }
+        .hashtag-input:focus { border-color: #6366f1; outline: none; background: rgba(99, 102, 241, 0.1); }
+        .dark .hashtag-input { border-color: #4338ca; color: #a5b4fc; }
+        .dark .hashtag-input:focus { background: rgba(99, 102, 241, 0.2); }
+        .search-highlight { background: #fef08a; padding: 0 2px; border-radius: 2px; }
+        .dark .search-highlight { background: #854d0e; }
+        #floater { position: absolute; display: none; background: #1e293b; color: white; padding: 12px 20px; border-radius: 50px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); z-index: 50; animation: popIn 0.15s ease-out; border: none; touch-action: manipulation; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .touch-btn { min-height: 44px; min-width: 44px; touch-action: manipulation; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2); z-index: 150; opacity: 0; transition: all 0.3s ease; max-width: 90vw; text-align: center; touch-action: manipulation; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        @media (min-width: 768px) { #editor { font-size: 18px; min-height: 400px; } .mobile-only { display: none; } }
+        @media (max-width: 767px) {
+            .desktop-only { display: none; }
+            aside { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; transform: translateX(-100%); transition: transform 0.3s ease; width: 85% !important; max-width: 320px; overscroll-behavior-y: contain; }
+            aside.open { transform: translateX(0); }
+            .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .sidebar-overlay.open { opacity: 1; pointer-events: all; }
+            #variablesPanel { position: fixed !important; top: 0; right: 0; left: auto; bottom: 0; width: 100% !important; max-width: 100%; height: 100vh !important; max-height: 100vh; z-index: 150; transform: none !important; }
+            #variablesPanel.hidden { display: none !important; }
+            #variablesPanel:not(.hidden) { display: flex !important; flex-direction: column; }
+            #variablesPanel > div:first-child { flex-shrink: 0; }
+            #variablesContainer { flex: 1 1 auto !important; min-height: 0 !important; max-height: calc(100vh - 80px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior-y: contain !important; touch-action: pan-y; }
+            .variables-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 140; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .variables-overlay.open { opacity: 1; pointer-events: all; }
+        }
+        .scrollable-y { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; touch-action: pan-y; }
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .arrow { transform: rotate(90deg); }
+        details > summary .arrow { transition: transform 0.2s ease; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal-content { background: white; width: 100%; max-width: 480px; max-height: 90vh; border-radius: 20px 20px 0 0; transform: translateY(100%); transition: transform 0.3s ease; overflow: hidden; }
+        .modal-overlay.open .modal-content { transform: translateY(0); }
+        .dark .modal-content { background: #1e293b; }
+        .choice-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; }
+        .dark .choice-item { background: #334155; border-color: #475569; }
+        .choice-item input { flex: 1; border: none; background: transparent; font-size: 14px; outline: none; }
+        .choice-item .remove-btn { color: #ef4444; cursor: pointer; padding: 4px; opacity: 0.6; transition: opacity 0.2s; }
+        .choice-item .remove-btn:hover { opacity: 1; }
+        .masked-section { background: linear-gradient(135deg, #fef2f2, #ffffff); border: 1px solid #fecaca; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+        .dark .masked-section { background: linear-gradient(135deg, #450a0a, #1e293b); border-color: #991b1b; }
+        .masked-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 6px; margin-top: 8px; transition: all 0.2s; }
+        .dark .masked-item { background: #334155; border-color: #475569; }
+        .masked-item:hover { border-color: #dc2626; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1); }
+        .masked-item .lock-icon { color: #dc2626; flex-shrink: 0; }
+        .masked-item .label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #6b7280; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dark .masked-item .label { color: #9ca3af; }
+        .masked-item .copy-btn { background: #dc2626; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; touch-action: manipulation; }
+        .masked-item .copy-btn:hover { background: #b91c1c; transform: scale(1.05); }
+        .masked-item .copy-btn.copied { background: #22c55e; }
+        .custom-dialog-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .custom-dialog-box { background: white; border-radius: 16px; width: 100%; max-width: 360px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; animation: dialogSlideIn 0.25s ease-out; }
+        @keyframes dialogSlideIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .dark .custom-dialog-box { background: #1e293b; }
+        .custom-dialog-header { padding: 20px 20px 12px; text-align: center; }
+        .custom-dialog-header h3 { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; }
+        .dark .custom-dialog-header h3 { color: #f1f5f9; }
+        .custom-dialog-message { padding: 0 20px 20px; text-align: center; }
+        .custom-dialog-message p { font-size: 14px; color: #64748b; margin: 0; line-height: 1.6; white-space: pre-line; }
+        .dark .custom-dialog-message p { color: #94a3b8; }
+        .custom-dialog-input-area { padding: 0 20px 20px; }
+        .custom-dialog-input { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; outline: none; transition: border-color 0.2s; background: #f8fafc; }
+        .custom-dialog-input:focus { border-color: #6366f1; background: white; }
+        .dark .custom-dialog-input { background: #0f172a; border-color: #334155; color: #f1f5f9; }
+        .dark .custom-dialog-input:focus { border-color: #6366f1; background: #1e293b; }
+        .custom-dialog-buttons { display: flex; border-top: 1px solid #e2e8f0; }
+        .dark .custom-dialog-buttons { border-top-color: #334155; }
+        .custom-dialog-btn { flex: 1; padding: 16px; font-size: 15px; font-weight: 600; border: none; background: transparent; cursor: pointer; transition: background 0.15s; min-height: 52px; touch-action: manipulation; }
+        .custom-dialog-btn-cancel { color: #64748b; border-right: 1px solid #e2e8f0; }
+        .custom-dialog-btn-cancel:hover { background: #f1f5f9; }
+        .dark .custom-dialog-btn-cancel { color: #94a3b8; border-right-color: #334155; }
+        .dark .custom-dialog-btn-cancel:hover { background: #334155; }
+        .custom-dialog-btn-ok { color: #6366f1; }
+        .custom-dialog-btn-ok:hover { background: #eef2ff; }
+        .dark .custom-dialog-btn-ok { color: #818cf8; }
+        .dark .custom-dialog-btn-ok:hover { background: #312e81; }
+        .custom-dialog-btn-danger { color: #ef4444; }
+        .custom-dialog-btn-danger:hover { background: #fef2f2; }
+        .dark .custom-dialog-btn-danger:hover { background: #450a0a; }
+        .custom-dialog-btn-primary { background: #6366f1; color: white; }
+        .custom-dialog-btn-primary:hover { background: #4f46e5; }
+        .custom-dialog-btn.single { border: none; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
+    <div id="installBanner" class="hidden bg-indigo-600 text-white px-4 py-3 text-center text-sm flex items-center justify-between">
+        <span class="flex-1">Install TypeFill Pro for offline access</span>
+        <div class="flex gap-2">
+            <button onclick="installPWA()" class="bg-white text-indigo-600 px-4 py-1.5 rounded font-semibold text-xs touch-btn">Install</button>
+            <button onclick="dismissInstall()" class="text-white opacity-75 px-2 touch-btn">x</button>
+        </div>
+    </div>
+    <header class="bg-white border-b border-gray-200 h-16 flex justify-between items-center px-4 md:px-6 shadow-sm z-20 shrink-0 safe-area-top">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="md:hidden touch-btn flex items-center justify-center -ml-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800">
+                <svg class="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-tight dark:text-white leading-tight">TypeFill Pro</h1>
+                <p class="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Create & Reuse Templates Offline</p>
+            </div>
+        </div>
+        <div class="flex gap-2 items-center">
+            <button onclick="toggleSearch()" class="touch-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition" title="Search Templates">
+                <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </button>
+            <button onclick="makeVariableFromSelection()" id="makeVarBtn" class="hidden sm:flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 rounded-md transition border border-emerald-200 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900 dark:hover:bg-emerald-800 touch-btn" title="Create variable from selected text">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+                <span>Make Variable</span>
+            </button>
+            <button onclick="makeChoicesFromSelection()" id="makeChoicesBtn" class="hidden sm:flex items-center gap-2 text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-2 rounded-md transition border border-amber-200 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-900 dark:hover:bg-amber-800 touch-btn" title="Create choices from selected text">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                </svg>
+                <span>Make Choices</span>
+            </button>
+            <button onclick="openPrivacyModal()" id="applyPrivacyBtn" class="hidden sm:flex items-center gap-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-md transition border border-red-200 dark:border-red-800 dark:text-red-400 dark:bg-red-900 dark:hover:bg-red-800 touch-btn" title="Apply privacy mask to hide sensitive data">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <span>Apply Privacy</span>
+            </button>
+            <button onclick="toggleTheme()" class="touch-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition" title="Toggle Theme">
+                <svg id="sunIcon" class="w-5 h-5 text-amber-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                <svg id="moonIcon" class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+            </button>
+            <button onclick="saveCurrentTemplate()" class="hidden md:flex text-sm font-medium text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-md transition border border-indigo-200 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900 touch-btn">Save</button>
+            <button onclick="copyFinalText()" id="copyBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow-md transition flex items-center gap-2 touch-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+                <span class="hidden sm:inline">Copy</span>
+            </button>
+        </div>
+    </header>
+    <div id="searchModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="p-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" id="globalSearchInput" class="flex-1 text-lg bg-transparent outline-none dark:text-white placeholder-gray-400" placeholder="Search templates, hashtags, content..." oninput="performGlobalSearch(this.value)">
+                    <button onclick="toggleSearch()" class="touch-btn p-2 text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="globalSearchResults" class="max-h-96 overflow-y-auto bg-white dark:bg-slate-800 scrollable-y">
+                <div class="p-8 text-center text-gray-400 dark:text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <p class="text-sm">Type to search all templates</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="choicesModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="p-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">Make Choices</h3>
+                    <button onclick="closeChoicesModal()" class="touch-btn p-2 text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Add options for: <span id="choicesOriginalWord" class="font-semibold text-amber-600 dark:text-amber-400"></span></p>
+            </div>
+            <div class="p-4 bg-slate-50 dark:bg-slate-900 max-h-96 overflow-y-auto scrollable-y">
+                <div id="choicesList" class="space-y-2"></div>
+                <button onclick="addNewChoice()" class="w-full mt-3 flex items-center justify-center gap-2 text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 py-3 rounded-lg transition border border-amber-200 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-900 dark:hover:bg-amber-800 touch-btn">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add Option
+                </button>
+            </div>
+            <div class="p-4 border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex gap-3">
+                <button onclick="closeChoicesModal()" class="flex-1 bg-gray-100 text-gray-700 font-medium py-3 rounded-lg touch-btn dark:bg-slate-700 dark:text-gray-300">Cancel</button>
+                <button onclick="saveChoices()" class="flex-1 bg-amber-500 text-white font-medium py-3 rounded-lg touch-btn hover:bg-amber-600">Save Choices</button>
+            </div>
+        </div>
+    </div>
+    <div id="privacyModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="p-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Apply Privacy Mask</h3>
+                    </div>
+                    <button onclick="closePrivacyModal()" class="touch-btn p-2 text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Hide sensitive data like passwords, API keys, or personal codes.</p>
+            </div>
+            <div class="p-4 bg-slate-50 dark:bg-slate-900">
+                <div class="space-y-4">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 dark:bg-red-900/30 dark:border-red-800">
+                        <div class="text-xs font-semibold text-red-600 uppercase mb-1 dark:text-red-400">Selected Text (will be hidden)</div>
+                        <div id="privacySelectedText" class="text-sm text-red-800 font-mono break-all dark:text-red-300">No text selected</div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Display Label</label>
+                        <input type="text" id="privacyLabelInput" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-slate-800 dark:border-slate-600 dark:text-white" placeholder="e.g., password, API_key, secret_code" maxlength="30">
+                        <p class="text-xs text-gray-400 mt-1">This label will be shown instead of the actual value.</p>
+                    </div>
+                    <div id="privacyLimitNotice" class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-3 dark:bg-yellow-900/30 dark:border-yellow-800">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <span class="text-xs text-yellow-700 dark:text-yellow-400" id="privacyLimitText">Free version limited to 2 masked fields per template.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex gap-3">
+                <button onclick="closePrivacyModal()" class="flex-1 bg-gray-100 text-gray-700 font-medium py-3 rounded-lg touch-btn dark:bg-slate-700 dark:text-gray-300">Cancel</button>
+                <button onclick="applyPrivacyMask()" class="flex-1 bg-red-500 text-white font-medium py-3 rounded-lg touch-btn hover:bg-red-600 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    Apply Mask
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="sidebar-overlay md:hidden" onclick="toggleSidebar()"></div>
+    <div id="variablesOverlay" class="variables-overlay md:hidden" onclick="toggleVariablesPanel()"></div>
+    <main class="flex-1 flex overflow-hidden relative">
+        <aside id="sidebar" class="w-72 bg-slate-50 border-r border-gray-200 flex flex-col shrink-0 dark:bg-slate-900 dark:border-slate-700 scrollable-y">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-white gap-2 dark:bg-slate-800 dark:border-slate-700">
+                <button onclick="createFolder()" class="flex-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2 py-2 rounded transition border border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 flex items-center justify-center gap-1 touch-btn">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                    <span>Folder</span>
+                </button>
+                <button onclick="createNew()" class="flex-1 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-2 py-2 rounded transition border border-indigo-100 dark:bg-indigo-900 dark:text-indigo-300 dark:border-indigo-800 flex items-center justify-center gap-1 touch-btn">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Template</span>
+                </button>
+                <button onclick="toggleSidebar()" class="md:hidden touch-btn p-2 text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="closeAllFoldersContainer" class="hidden px-3 py-2 border-b border-gray-200 bg-slate-100 dark:bg-slate-800 dark:border-slate-700">
+                <button onclick="closeAllFolders()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 py-2 rounded transition dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:text-white touch-btn">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <span>Close All Folders</span>
+                </button>
+            </div>
+            <div id="templateList" class="flex-1 overflow-y-auto p-2 space-y-1 scrollable-y"></div>
+            <div class="p-3 border-t border-gray-200 bg-white space-y-2 dark:bg-slate-800 dark:border-slate-700">
+                <button onclick="document.getElementById('importFileInput').click()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 py-3 rounded transition dark:bg-slate-700 dark:text-slate-300 touch-btn">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Import JSON
+                </button>
+                <button onclick="exportData()" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 py-3 rounded transition touch-btn">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export JSON
+                </button>
+            </div>
+        </aside>
+        <section class="flex-1 bg-white relative flex flex-col min-w-0 dark:bg-slate-900">
+            <div class="h-12 border-b border-gray-100 flex items-center px-4 gap-3 text-xs text-gray-400 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-500">
+                <span>Status: <span id="statusIndicator" class="text-green-500 font-medium">Ready</span></span>
+                <button onclick="makeVariableFromSelection()" id="mobileMakeVarBtn" class="sm:hidden flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded border border-emerald-200 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900 touch-btn">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    <span>Var</span>
+                </button>
+                <button onclick="makeChoicesFromSelection()" id="mobileMakeChoicesBtn" class="sm:hidden flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded border border-amber-200 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-900 touch-btn">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                    <span>Choice</span>
+                </button>
+                <button onclick="openPrivacyModal()" id="mobilePrivacyBtn" class="sm:hidden flex items-center gap-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded border border-red-200 dark:border-red-800 dark:text-red-400 dark:bg-red-900 touch-btn">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    <span>Mask</span>
+                </button>
+                <div class="flex-1"></div>
+                <span class="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded border border-yellow-100 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800 hidden md:block">Highlight text to create variables, choices, or privacy masks</span>
+                <button onclick="toggleVariablesPanel()" class="md:hidden touch-btn p-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-white cursor-text dark:bg-slate-900 scrollable-y" id="editorContainer">
+                <div id="editor" contenteditable="true" class="max-w-3xl mx-auto focus:outline-none text-base text-gray-700 dark:text-gray-200" spellcheck="false" placeholder="Start typing your template..."></div>
+                <button id="floater" class="touch-btn">Make Variable</button>
+            </div>
+            <div id="hashtagsSection" class="border-t border-gray-100 bg-slate-50 p-3 dark:bg-slate-800 dark:border-slate-700">
+                <div class="max-w-3xl mx-auto flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Hashtags:</span>
+                    <div id="templateHashtags" class="flex items-center gap-1 flex-wrap"></div>
+                    <input type="text" id="hashtagInput" class="hashtag-input" placeholder="#add-tag" onkeydown="handleHashtagInput(event)" maxlength="30">
+                </div>
+            </div>
+            <div class="md:hidden border-t border-gray-200 bg-white p-3 flex gap-2 dark:bg-slate-800 dark:border-slate-700 safe-area-bottom">
+                <button onclick="saveCurrentTemplate()" class="flex-1 bg-indigo-600 text-white font-medium py-3 rounded-lg touch-btn">Save Template</button>
+            </div>
+        </section>
+        <aside id="variablesPanel" class="hidden md:flex w-80 bg-white border-l border-gray-200 flex-col shrink-0 shadow-xl z-10 dark:bg-slate-800 dark:border-slate-700 absolute md:relative right-0 h-full transform translate-x-full md:translate-x-0 transition-transform duration-300">
+            <div class="p-4 bg-slate-50 border-b border-gray-200 flex justify-between items-center dark:bg-slate-900 dark:border-slate-700">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-700 dark:text-gray-200">Variables & Choices</h2>
+                    <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">Replace or select values here.</p>
+                </div>
+                <button onclick="toggleVariablesPanel()" class="md:hidden touch-btn p-2">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="variablesContainer" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900 scrollable-y"></div>
+        </aside>
+    </main>
+    <div id="choiceDropdown" class="choice-dropdown hidden"></div>
+    <div id="toast" class="toast"></div>
+    <input type="file" id="importFileInput" accept=".json" class="hidden">
+    <script>
+const APP_VERSION='5.2.0 Pro';const DB_NAME='TypeFillDB';const DB_VERSION=7;const STORE_TEMPLATES='templates';const STORE_FOLDERS='folders';const STORE_SETTINGS='settings';let db=null;let deferredPrompt=null;
+
+// ====== CUSTOM DIALOG FUNCTIONS (No URL Reveal) ======
+let dialogResolve = null;
+
+function customAlert(message) {
+    return new Promise((resolve) => {
+        dialogResolve = resolve;
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-dialog-overlay';
+        overlay.id = 'customDialogOverlay';
+        overlay.innerHTML = `
+            <div class="custom-dialog-box">
+                <div class="custom-dialog-message">
+                    <p>${escapeHtml(message)}</p>
+                </div>
+                <div class="custom-dialog-buttons">
+                    <button class="custom-dialog-btn custom-dialog-btn-ok single" onclick="closeCustomDialog()">OK</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        overlay.querySelector('button').focus();
+    });
+}
+
+function customConfirm(message) {
+    return new Promise((resolve) => {
+        dialogResolve = resolve;
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-dialog-overlay';
+        overlay.id = 'customDialogOverlay';
+        overlay.innerHTML = `
+            <div class="custom-dialog-box">
+                <div class="custom-dialog-message">
+                    <p>${escapeHtml(message)}</p>
+                </div>
+                <div class="custom-dialog-buttons">
+                    <button class="custom-dialog-btn custom-dialog-btn-cancel" onclick="closeCustomDialog(false)">Cancel</button>
+                    <button class="custom-dialog-btn custom-dialog-btn-ok" onclick="closeCustomDialog(true)">OK</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        overlay.querySelectorAll('button')[1].focus();
+    });
+}
+
+function customPrompt(message, defaultValue = '') {
+    return new Promise((resolve) => {
+        dialogResolve = resolve;
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-dialog-overlay';
+        overlay.id = 'customDialogOverlay';
+        overlay.innerHTML = `
+            <div class="custom-dialog-box">
+                <div class="custom-dialog-header">
+                    <h3>${escapeHtml(message)}</h3>
+                </div>
+                <div class="custom-dialog-input-area">
+                    <input type="text" class="custom-dialog-input" id="customDialogInput" value="${escapeHtml(defaultValue)}" autofocus>
+                </div>
+                <div class="custom-dialog-buttons">
+                    <button class="custom-dialog-btn custom-dialog-btn-cancel" onclick="closeCustomDialog(null)">Cancel</button>
+                    <button class="custom-dialog-btn custom-dialog-btn-primary" onclick="closeCustomDialogWithInput()">OK</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        const input = overlay.querySelector('input');
+        input.focus();
+        input.select();
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') closeCustomDialogWithInput();
+            if (e.key === 'Escape') closeCustomDialog(null);
+        });
+    });
+}
+
+function closeCustomDialog(result) {
+    const overlay = document.getElementById('customDialogOverlay');
+    if (overlay) overlay.remove();
+    if (dialogResolve) {
+        dialogResolve(result);
+        dialogResolve = null;
+    }
+}
+
+function closeCustomDialogWithInput() {
+    const input = document.getElementById('customDialogInput');
+    const value = input ? input.value : '';
+    closeCustomDialog(value);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+// ====== END CUSTOM DIALOG FUNCTIONS ======
+
+(function preventZoom(){let lastTouchEnd=0;document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault()}lastTouchEnd=now},{passive:false});document.addEventListener('touchmove',function(e){if(e.touches.length>1){e.preventDefault()}},{passive:false});document.addEventListener('touchstart',function(e){if(e.touches.length>1){e.preventDefault()}},{passive:false})})();async function initDatabase(){return new Promise((resolve,reject)=>{const request=indexedDB.open(DB_NAME,DB_VERSION);request.onerror=()=>reject(request.error);request.onsuccess=()=>{db=request.result;resolve(db)};request.onupgradeneeded=(event)=>{const database=event.target.result;if(!database.objectStoreNames.contains(STORE_TEMPLATES))database.createObjectStore(STORE_TEMPLATES,{keyPath:'id'});if(!database.objectStoreNames.contains(STORE_FOLDERS))database.createObjectStore(STORE_FOLDERS,{keyPath:'id'});if(!database.objectStoreNames.contains(STORE_SETTINGS))database.createObjectStore(STORE_SETTINGS,{keyPath:'key'})}})}const DataLayer={async saveTemplates(templates){if(!db)await initDatabase();return new Promise((resolve,reject)=>{const transaction=db.transaction([STORE_TEMPLATES],'readwrite');const store=transaction.objectStore(STORE_TEMPLATES);store.clear();templates.forEach(t=>store.put(t));transaction.oncomplete=()=>resolve();transaction.onerror=()=>reject(transaction.error)})},async getTemplates(){if(!db)await initDatabase();return new Promise((resolve,reject)=>{const transaction=db.transaction([STORE_TEMPLATES],'readonly');const store=transaction.objectStore(STORE_TEMPLATES);const request=store.getAll();request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)})},async saveFolders(folders){if(!db)await initDatabase();return new Promise((resolve,reject)=>{const transaction=db.transaction([STORE_FOLDERS],'readwrite');const store=transaction.objectStore(STORE_FOLDERS);store.clear();folders.forEach(f=>store.put(f));transaction.oncomplete=()=>resolve();transaction.onerror=()=>reject(transaction.error)})},async getFolders(){if(!db)await initDatabase();return new Promise((resolve,reject)=>{const transaction=db.transaction([STORE_FOLDERS],'readonly');const store=transaction.objectStore(STORE_FOLDERS);const request=store.getAll();request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)})},async saveSetting(key,value){if(!db)await initDatabase();return new Promise((resolve,reject)=>{const transaction=db.transaction([STORE_SETTINGS],'readwrite');const store=transaction.objectStore(STORE_SETTINGS);store.put({key,value});transaction.oncomplete=()=>resolve();transaction.onerror=()=>reject(transaction.error)})},async getSetting(key){if(!db)await initDatabase();return new Promise((resolve,reject)=>{const transaction=db.transaction([STORE_SETTINGS],'readonly');const store=transaction.objectStore(STORE_SETTINGS);const request=store.get(key);request.onsuccess=()=>resolve(request.result?.value);request.onerror=()=>reject(request.error)})}};const state={templates:[],folders:[],currentTemplateId:null,currentVariables:[],currentChoices:[],currentMaskedVariables:[],currentHashtags:[],darkMode:false,isPro:true};let editingChoiceId=null;let tempChoicesList=[];let privacySelectedText='';let varContainer=null;let templateList=null;
+
+// ====== Service Worker Update Check ======
+async function checkForSWUpdates() {
+    if ('serviceWorker' in navigator) {
+        try {
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration) {
+                await registration.update();
+            }
+        } catch (err) {
+            console.log('[TypeFill] SW update check failed:', err);
+        }
+    }
+}
+
+// Listen for SW update messages
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SW_UPDATED') {
+            console.log('[TypeFill] SW updated to version:', event.data.version);
+            showToast(`App updated to v${event.data.version}!`);
+            // Force reload if requested (for APK deployments)
+            if (event.data.forceReload) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            }
+        }
+    });
+}
+
+// ====== Issue 3 Fix: Re-attach event listeners after template load ======
+function reattachChoiceTokenListeners() {
+    if (!editor) return;
+    
+    const choiceTokens = editor.querySelectorAll('.choice-token');
+    
+    choiceTokens.forEach(token => {
+        const choiceId = token.dataset.id;
+        if (!choiceId) return;
+        
+        // Clone to remove old listeners
+        const newToken = token.cloneNode(true);
+        token.parentNode.replaceChild(newToken, token);
+        
+        // Attach fresh click handler
+        newToken.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            showChoiceDropdown(e, choiceId);
+        });
+        
+        // Touch support
+        newToken.addEventListener('touchend', (e) => {
+            if (e.cancelable) {
+                e.preventDefault();
+                showChoiceDropdown(e, choiceId);
+            }
+        }, { passive: false });
+    });
+    
+    console.log('[TypeFill] Re-attached', choiceTokens.length, 'choice token listeners');
+}
+
+function reattachMaskedTokenListeners() {
+    if (!editor) return;
+    
+    const maskedTokens = editor.querySelectorAll('.masked-token');
+    
+    maskedTokens.forEach(token => {
+        const maskId = token.dataset.maskId;
+        if (!maskId) return;
+        
+        // Clone to remove old listeners
+        const newToken = token.cloneNode(true);
+        token.parentNode.replaceChild(newToken, token);
+        
+        // Attach fresh click handler
+        newToken.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            copyMaskedValue(e, maskId);
+        });
+        
+        // Touch support
+        newToken.addEventListener('touchend', (e) => {
+            if (e.cancelable) {
+                e.preventDefault();
+                copyMaskedValue(e, maskId);
+            }
+        }, { passive: false });
+    });
+    
+    console.log('[TypeFill] Re-attached', maskedTokens.length, 'masked token listeners');
+}
+
+// ====== Issue 2 Fix: Secure Clipboard Copy for Masked Values ======
+function shouldUseEnhancedPrivacy() {
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const hasClipboardAPI = !!navigator.clipboard && !!navigator.clipboard.writeText;
+    return isAndroid || hasClipboardAPI;
+}
+
+function fallbackSecureCopy(text) {
+    try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.cssText = `
+            position: fixed;
+            left: -9999px;
+            top: -9999px;
+            opacity: 0;
+            pointer-events: none;
+        `;
+        textarea.setAttribute('autocomplete', 'off');
+        textarea.setAttribute('autocorrect', 'off');
+        textarea.setAttribute('autocapitalize', 'off');
+        textarea.setAttribute('spellcheck', 'false');
+        
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        textarea.setSelectionRange(0, text.length);
+        
+        const success = document.execCommand('copy');
+        textarea.value = '';
+        document.body.removeChild(textarea);
+        window.getSelection()?.removeAllRanges();
+        
+        return success;
+    } catch (err) {
+        console.error('[TypeFill] Fallback copy failed:', err);
+        return false;
+    }
+}
+
+// SECURE COPY - Replace original copyMaskedValue
+window.copyMaskedValue = async function(event, maskId) {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const maskedVar = state.currentMaskedVariables.find(m => m.id === maskId);
+    if (!maskedVar) {
+        showToast('Masked variable not found');
+        return;
+    }
+    
+    const actualValue = maskedVar.actualValue;
+    const token = event.target.closest('.masked-token') || event.target;
+    
+    // Visual feedback immediately
+    token.classList.add('copied');
+    
+    try {
+        if (shouldUseEnhancedPrivacy() && typeof ClipboardItem !== 'undefined') {
+            // Use ClipboardItem for enhanced privacy
+            const clipboardItem = new ClipboardItem({
+                'text/plain': new Blob([actualValue], { type: 'text/plain' })
+            });
+            await navigator.clipboard.write(clipboardItem);
+            
+            // Clear selection to prevent reveal
+            window.getSelection()?.removeAllRanges();
+            
+            showToast('✓ Hidden value copied securely');
+        } else {
+            await navigator.clipboard.writeText(actualValue);
+            showToast('✓ Hidden value copied');
+        }
+    } catch (err) {
+        console.error('[TypeFill] Secure copy failed, using fallback:', err);
+        
+        const success = fallbackSecureCopy(actualValue);
+        if (success) {
+            showToast('✓ Hidden value copied');
+        } else {
+            showToast('⚠ Copy may have failed - please paste to verify');
+        }
+    }
+    
+    setTimeout(() => token.classList.remove('copied'), 1500);
+};
+
+// SECURE COPY FROM SIDEBAR - Replace original
+window.copyMaskedValueFromSidebar = async function(maskId, button) {
+    const maskedVar = state.currentMaskedVariables.find(m => m.id === maskId);
+    if (!maskedVar) {
+        showToast('Masked variable not found');
+        return;
+    }
+    
+    const actualValue = maskedVar.actualValue;
+    const originalText = button.textContent;
+    
+    button.textContent = 'Copying...';
+    button.disabled = true;
+    
+    try {
+        if (shouldUseEnhancedPrivacy() && typeof ClipboardItem !== 'undefined') {
+            const clipboardItem = new ClipboardItem({
+                'text/plain': new Blob([actualValue], { type: 'text/plain' })
+            });
+            await navigator.clipboard.write(clipboardItem);
+        } else {
+            await navigator.clipboard.writeText(actualValue);
+        }
+        
+        button.textContent = '✓ Copied';
+        button.classList.add('copied');
+        showToast('✓ Hidden value copied securely');
+        
+    } catch (err) {
+        console.error('[TypeFill] Sidebar copy failed:', err);
+        
+        const success = fallbackSecureCopy(actualValue);
+        button.textContent = success ? '✓ Copied' : 'Failed';
+        button.classList.toggle('copied', success);
+        
+        if (!success) {
+            showToast('⚠ Copy may have failed - please paste to verify');
+        }
+    }
+    
+    setTimeout(() => {
+        button.textContent = originalText;
+        button.classList.remove('copied');
+        button.disabled = false;
+    }, 2000);
+};
+// ====== End Secure Clipboard Fix ======
+
+document.addEventListener('DOMContentLoaded',async()=>{varContainer=document.getElementById('variablesContainer');templateList=document.getElementById('templateList');try{await initDatabase();await loadStateFromStorage();await loadTheme();if(state.templates.length===0){if(editor)editor.innerHTML=`Welcome to TypeFill!
+
+This is your template editor. Start typing your template here.
+
+Highlight text to:
+• Make Variable - Replace with custom text
+• Make Choices - Create a dropdown with options
+• Apply Privacy - Hide sensitive data (passwords, API keys)
+
+Tap masked fields to copy hidden values during screen sharing!
+
+Add hashtags below to organize your templates!`}else{loadTemplateUI(state.templates[0].id)}renderTemplateList();setupInstallPrompt();checkForSWUpdates();setInterval(checkForSWUpdates, 30 * 60 * 1000);const fileInput=document.getElementById('importFileInput');if(fileInput){fileInput.addEventListener('change',function(){handleImport(this)})}showToast('TypeFill v'+APP_VERSION+' Ready!')}catch(err){console.error('Initialization error:',err);showToast('Error loading app')}});function setupInstallPrompt(){window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;setTimeout(()=>{const banner=document.getElementById('installBanner');const dismissed=localStorage.getItem('installBannerDismissed');if(banner&&!dismissed&&!window.matchMedia('(display-mode: standalone)').matches){banner.classList.remove('hidden')}},3000)})}window.installPWA=async function(){if(deferredPrompt){deferredPrompt.prompt();const{outcome}=await deferredPrompt.userChoice;if(outcome==='accepted'){showToast('TypeFill installed!');document.getElementById('installBanner').classList.add('hidden')}deferredPrompt=null}};window.dismissInstall=function(){document.getElementById('installBanner').classList.add('hidden');localStorage.setItem('installBannerDismissed','true')};async function loadTheme(){try{const savedTheme=await DataLayer.getSetting('theme');if(savedTheme==='dark'||(!savedTheme&&window.matchMedia('(prefers-color-scheme: dark)').matches)){enableDarkMode()}else{enableLightMode()}}catch(err){console.log('[TypeFill] Theme load error:',err)}}window.toggleTheme=function(){if(state.darkMode){enableLightMode();DataLayer.saveSetting('theme','light')}else{enableDarkMode();DataLayer.saveSetting('theme','dark')}};function enableDarkMode(){document.documentElement.classList.add('dark');state.darkMode=true;document.getElementById('sunIcon')?.classList.remove('hidden');document.getElementById('moonIcon')?.classList.add('hidden')}function enableLightMode(){document.documentElement.classList.remove('dark');state.darkMode=false;document.getElementById('sunIcon')?.classList.add('hidden');document.getElementById('moonIcon')?.classList.remove('hidden')}async function loadStateFromStorage(){try{const[templates,folders]=await Promise.all([DataLayer.getTemplates(),DataLayer.getFolders()]);state.templates=templates||[];state.folders=folders||[]}catch(err){console.error('[TypeFill] Storage load error:',err)}}async function persistState(){try{await Promise.all([DataLayer.saveTemplates(state.templates),DataLayer.saveFolders(state.folders)]);console.log('[TypeFill] State persisted')}catch(err){console.error('[TypeFill] Save error:',err);showToast('Failed to save data')}}window.toggleSidebar=function(){document.getElementById('sidebar')?.classList.toggle('open');document.querySelector('.sidebar-overlay')?.classList.toggle('open')};window.toggleVariablesPanel=function(){document.getElementById('variablesPanel')?.classList.toggle('hidden');document.getElementById('variablesOverlay')?.classList.toggle('open')};function showToast(message,duration=3000){const toast=document.getElementById('toast');if(toast){toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),duration)}}window.closeAllFolders=function(){document.querySelectorAll('#templateList details').forEach(d=>d.open=false);showToast('All folders closed')};window.toggleSearch=function(){const modal=document.getElementById('searchModal');if(modal.classList.contains('open')){modal.classList.remove('open')}else{modal.classList.add('open');setTimeout(()=>document.getElementById('globalSearchInput')?.focus(),100)}};window.performGlobalSearch=function(query){const resultsContainer=document.getElementById('globalSearchResults');if(!query||query.trim().length===0){resultsContainer.innerHTML='<div class="p-8 text-center text-gray-400 dark:text-gray-500"><svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg><p class="text-sm">Type to search all templates</p></div>';return}const normalizedQuery=query.toLowerCase().trim();const results=[];state.templates.forEach(template=>{let matches=[];let matchType='';if(template.name&&template.name.toLowerCase().includes(normalizedQuery)){matches.push({field:'name',text:template.name});matchType='name'}if(template.hashtags&&template.hashtags.length>0){template.hashtags.forEach(tag=>{if(tag.toLowerCase().includes(normalizedQuery)){matches.push({field:'hashtag',text:tag});matchType='hashtag'}})}if(template.html){let htmlContent=template.html;if(template.maskedVariables&&template.maskedVariables.length>0){template.maskedVariables.forEach(mv=>{if(mv.actualValue){const escapedValue=mv.actualValue.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const regex=new RegExp(escapedValue,'g');htmlContent=htmlContent.replace(regex,`[${mv.label}]`)}})}const tempDiv=document.createElement('div');tempDiv.innerHTML=htmlContent;tempDiv.querySelectorAll('.masked-token').forEach(token=>{const mv=template.maskedVariables?.find(m=>m.id===token.dataset.maskId);token.textContent=`[${mv?.label||'hidden'}]`});const plainText=tempDiv.textContent||tempDiv.innerText;let isSearchingForMaskedValue=false;if(template.maskedVariables&&template.maskedVariables.length>0){template.maskedVariables.forEach(mv=>{if(mv.actualValue&&mv.actualValue.toLowerCase().includes(normalizedQuery)){isSearchingForMaskedValue=true}})}if(!isSearchingForMaskedValue&&plainText.toLowerCase().includes(normalizedQuery)){const index=plainText.toLowerCase().indexOf(normalizedQuery);const start=Math.max(0,index-40);const end=Math.min(plainText.length,index+query.length+40);matches.push({field:'content',text:(start>0?'...':'')+plainText.substring(start,end)+(end<plainText.length?'...':'')});if(!matchType)matchType='content'}}if(template.maskedVariables&&template.maskedVariables.length>0){template.maskedVariables.forEach(mv=>{if(mv.label&&mv.label.toLowerCase().includes(normalizedQuery)){matches.push({field:'masked_label',text:`[${mv.label}]`});if(!matchType)matchType='masked_label'}})}if(matches.length>0){results.push({template,matches,matchType})}});if(results.length===0){resultsContainer.innerHTML='<div class="p-8 text-center text-gray-400 dark:text-gray-500"><svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><p class="text-sm">No results found</p></div>';return}let html='';results.forEach(result=>{const{template,matches}=result;const folder=state.folders.find(f=>f.id===template.folderId);const maskedCount=template.maskedVariables?.length||0;html+=`<div class="search-result-item" onclick="selectSearchResult('${template.id}')"><div class="flex items-start gap-3"><div class="bg-indigo-100 dark:bg-indigo-900 p-2 rounded-lg"><svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div><div class="flex-1 min-w-0"><div class="font-medium text-gray-900 dark:text-white truncate">${escapeHtml(template.name)}${maskedCount>0?`<span class="text-xs text-red-400 ml-2">🔒 ${maskedCount}</span>`:''}</div>${folder?`<div class="text-xs text-gray-400 mt-0.5">📁 ${escapeHtml(folder.name)}</div>`:''}</div></div></div>`});resultsContainer.innerHTML=html};window.selectSearchResult=function(templateId){toggleSearch();loadTemplateUI(templateId);if(window.innerWidth<768)toggleSidebar()};window.handleHashtagInput=function(event){if(event.key==='Enter'||event.key===','){event.preventDefault();addHashtag(event.target.value);event.target.value=''}};window.addHashtag=function(tag){let cleanTag=tag.trim().toLowerCase().replace(/^#/,'').replace(/[^a-z0-9_-]/g,'');if(cleanTag.length===0||cleanTag.length>30)return;if(state.currentHashtags.includes(cleanTag)){showToast('Hashtag already exists');return}state.currentHashtags.push(cleanTag);renderHashtags()};window.removeHashtag=function(tag){state.currentHashtags=state.currentHashtags.filter(t=>t!==tag);renderHashtags()};function renderHashtags(){const container=document.getElementById('templateHashtags');if(!container)return;if(state.currentHashtags.length===0){container.innerHTML='<span class="text-xs text-gray-400">No tags yet</span>';return}container.innerHTML=state.currentHashtags.map(tag=>`<span class="hashtag" onclick="searchByHashtag('${tag}')">#${escapeHtml(tag)}<button onclick="event.stopPropagation();removeHashtag('${tag}')" class="ml-1 opacity-0 group-hover:opacity-100">x</button></span>`).join('')}window.searchByHashtag=function(tag){toggleSearch();document.getElementById('globalSearchInput').value=tag;performGlobalSearch(tag)};window.makeChoicesFromSelection=function(){const selection=window.getSelection();const text=selection.toString().trim();if(!text){showToast('Please highlight text first');return}let parent=selection.anchorNode?.parentElement;while(parent&&parent!==editor){if(parent.classList?.contains('token')||parent.classList?.contains('choice-token')||parent.classList?.contains('masked-token')){showToast('Text is already a variable, choice, or masked field');return}parent=parent.parentElement}openChoicesModal(text)};window.openChoicesModal=function(originalText){editingChoiceId='choice_'+Date.now()+'_'+Math.floor(Math.random()*1000);tempChoicesList=[{id:Date.now(),text:originalText,isOriginal:true}];document.getElementById('choicesOriginalWord').textContent=originalText;renderChoicesList();document.getElementById('choicesModal').classList.add('open')};window.closeChoicesModal=function(){document.getElementById('choicesModal').classList.remove('open');editingChoiceId=null;tempChoicesList=[]};window.addNewChoice=function(){tempChoicesList.push({id:Date.now(),text:'',isOriginal:false});renderChoicesList();setTimeout(()=>document.querySelectorAll('#choicesList input')[document.querySelectorAll('#choicesList input').length-1]?.focus(),100)};window.removeChoice=function(id){if(tempChoicesList.find(c=>c.id===id)?.isOriginal){showToast('Cannot remove the original option');return}tempChoicesList=tempChoicesList.filter(c=>c.id!==id);renderChoicesList()};window.updateChoiceText=function(id,text){const choice=tempChoicesList.find(c=>c.id===id);if(choice)choice.text=text};function renderChoicesList(){document.getElementById('choicesList').innerHTML=tempChoicesList.map((c,i)=>`<div class="choice-item"><span class="text-xs text-gray-400 w-6">${i+1}.</span>${c.isOriginal?'<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded">Original</span>':''}<input type="text" value="${escapeHtml(c.text)}" placeholder="Enter option..." oninput="updateChoiceText(${c.id},this.value)" class="dark:text-white">${!c.isOriginal?`<button onclick="removeChoice(${c.id})" class="remove-btn"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>`:''}</div>`).join('')}window.saveChoices=function(){const validChoices=tempChoicesList.filter(c=>c.text.trim());if(validChoices.length<2){showToast('Add at least one more option');return}const originalText=tempChoicesList.find(c=>c.isOriginal)?.text;createChoiceToken(originalText,validChoices.map(c=>c.text),editingChoiceId);state.currentChoices.push({id:editingChoiceId,original:originalText,options:validChoices.map(c=>c.text),selected:originalText});closeChoicesModal();renderSidebar();showToast('Choices created!')};function createChoiceToken(originalText,options,choiceId){if(!editor)return;const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT,null,false);const nodesToReplace=[];while(walker.nextNode()){const node=walker.currentNode;if(node.nodeValue.includes(originalText)){let parent=node.parentElement,isInToken=false;while(parent&&parent!==editor){if(parent.classList?.contains('token')||parent.classList?.contains('choice-token')||parent.classList?.contains('masked-token')){isInToken=true;break}parent=parent.parentElement}if(!isInToken)nodesToReplace.push(node)}}nodesToReplace.forEach(node=>{const fragment=document.createDocumentFragment();node.nodeValue.split(originalText).forEach((part,i)=>{fragment.appendChild(document.createTextNode(part));if(i<node.nodeValue.split(originalText).length-1){const span=document.createElement('span');span.className='choice-token';span.dataset.id=choiceId;span.dataset.options=JSON.stringify(options);span.textContent=originalText;span.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); showChoiceDropdown(e, choiceId); });span.addEventListener('touchend', (e) => { if (e.cancelable) { e.preventDefault(); showChoiceDropdown(e, choiceId); } }, { passive: false });fragment.appendChild(span)}});if(node.parentNode)node.parentNode.replaceChild(fragment,node)})}
+
+// Issue 3 Fix: Enhanced showChoiceDropdown with better error handling and touch support
+window.showChoiceDropdown = function(event, choiceId) {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const choice = state.currentChoices.find(c => c.id === choiceId);
+    if (!choice) {
+        console.warn('[TypeFill] Choice not found:', choiceId);
+        showToast('Choice data not found - try re-saving template');
+        return;
+    }
+    
+    const dropdown = document.getElementById('choiceDropdown');
+    if (!dropdown) {
+        console.error('[TypeFill] Dropdown element not found');
+        return;
+    }
+    
+    const target = event.target.closest('.choice-token') || event.target;
+    const rect = target.getBoundingClientRect();
+    
+    // Position dropdown properly
+    dropdown.style.position = 'absolute';
+    dropdown.style.top = `${rect.bottom + window.scrollY + 4}px`;
+    dropdown.style.left = `${Math.min(rect.left, window.innerWidth - 150)}px`;
+    dropdown.style.zIndex = '10000';
+    dropdown.style.pointerEvents = 'auto';
+    
+    // Build options HTML
+    dropdown.innerHTML = choice.options.map(opt => `
+        <div class="choice-option ${opt === choice.selected ? 'selected' : ''}" 
+             onclick="selectChoiceOption('${choiceId}', '${escapeHtml(opt)}', event)">
+            ${escapeHtml(opt)}${opt === choice.selected ? ' ✓' : ''}
+        </div>
+    `).join('');
+    
+    // Show dropdown
+    dropdown.classList.remove('hidden');
+    
+    // Close on outside click
+    const closeDropdown = (e) => {
+        if (!dropdown.contains(e.target) && !e.target.closest('.choice-token')) {
+            dropdown.classList.add('hidden');
+            document.removeEventListener('click', closeDropdown);
+            document.removeEventListener('touchend', closeDropdown);
+        }
+    };
+    
+    setTimeout(() => {
+        document.addEventListener('click', closeDropdown);
+        document.addEventListener('touchend', closeDropdown);
+    }, 100);
+};
+
+window.selectChoiceOption=function(choiceId,option,event){event.stopPropagation();const choice=state.currentChoices.find(c=>c.id===choiceId);if(!choice)return;choice.selected=option;document.querySelectorAll(`.choice-token[data-id="${choiceId}"]`).forEach(t=>t.textContent=option);document.getElementById('choiceDropdown').classList.add('hidden');showToast(`Selected: ${option}`);renderSidebar()};document.addEventListener('scroll',()=>{const dropdown=document.getElementById('choiceDropdown');if(dropdown && !dropdown.classList.contains('hidden')){dropdown.classList.add('hidden')}},true);window.makeVariableFromSelection=function(){const selection=window.getSelection();const text=selection.toString().trim();if(!text){showToast('Please highlight text first');return}let parent=selection.anchorNode?.parentElement;while(parent&&parent!==editor){if(parent.classList?.contains('token')||parent.classList?.contains('choice-token')||parent.classList?.contains('masked-token')){showToast('Text is already a variable, choice, or masked field');return}parent=parent.parentElement}createVariable(text);showToast('Variable created!')};const FREE_MASKED_LIMIT=Infinity;window.openPrivacyModal=function(){const selection=window.getSelection();const text=selection.toString().trim();if(!text){showToast('Please highlight text first');return}let parent=selection.anchorNode?.parentElement;while(parent&&parent!==editor){if(parent.classList?.contains('token')||parent.classList?.contains('choice-token')||parent.classList?.contains('masked-token')){showToast('Text is already a variable, choice, or masked field');return}parent=parent.parentElement}privacySelectedText=text;document.getElementById('privacySelectedText').textContent=text.length>100?text.substring(0,100)+'...':text;document.getElementById('privacyLabelInput').value='';const currentCount=state.currentMaskedVariables.length;const limitNotice=document.getElementById('privacyLimitNotice');const limitText=document.getElementById('privacyLimitText');if(!state.isPro&&currentCount>=FREE_MASKED_LIMIT){limitNotice.classList.remove('hidden');limitText.textContent=`Free version limited to ${FREE_MASKED_LIMIT} masked fields per template. Upgrade to Pro for unlimited!`}else if(!state.isPro&&currentCount>=1){limitNotice.classList.remove('hidden');limitText.textContent=`${FREE_MASKED_LIMIT-currentCount} masked field(s) remaining in free version.`}else{limitNotice.classList.add('hidden')}document.getElementById('privacyModal').classList.add('open');setTimeout(()=>document.getElementById('privacyLabelInput').focus(),100)};window.closePrivacyModal=function(){document.getElementById('privacyModal').classList.remove('open');privacySelectedText=''};window.applyPrivacyMask=function(){if(!state.isPro&&state.currentMaskedVariables.length>=FREE_MASKED_LIMIT){showToast(`Free version limited to ${FREE_MASKED_LIMIT} masked fields`);return}const label=document.getElementById('privacyLabelInput').value.trim();if(!label){showToast('Please enter a display label');return}if(!privacySelectedText){showToast('No text selected');closePrivacyModal();return}createMaskedVariable(privacySelectedText,label);closePrivacyModal();showToast('Privacy mask applied!')};function createMaskedVariable(actualValue,displayLabel){const maskId='mask_'+Date.now()+'_'+Math.floor(Math.random()*1000);state.currentMaskedVariables.push({id:maskId,label:displayLabel,actualValue:actualValue,createdAt:Date.now()});replaceWithMaskedToken(actualValue,maskId,displayLabel);renderSidebar();updateActionButtons('')}function replaceWithMaskedToken(searchText,maskId,displayLabel){if(!editor)return;const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT,null,false);const nodesToReplace=[];while(walker.nextNode()){const node=walker.currentNode;if(node.nodeValue.includes(searchText)){let parent=node.parentElement,isInToken=false;while(parent&&parent!==editor){if(parent.classList?.contains('token')||parent.classList?.contains('choice-token')||parent.classList?.contains('masked-token')){isInToken=true;break}parent=parent.parentElement}if(!isInToken)nodesToReplace.push(node)}}nodesToReplace.forEach(node=>{const fragment=document.createDocumentFragment();node.nodeValue.split(searchText).forEach((part,i)=>{fragment.appendChild(document.createTextNode(part));if(i<node.nodeValue.split(searchText).length-1){const span=document.createElement('span');span.className='masked-token';span.dataset.maskId=maskId;span.textContent=`[${displayLabel}]`;span.title='Tap to copy hidden value';span.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); copyMaskedValue(e, maskId); });span.addEventListener('touchend', (e) => { if (e.cancelable) { e.preventDefault(); copyMaskedValue(e, maskId); } }, { passive: false });fragment.appendChild(span)}});if(node.parentNode)node.parentNode.replaceChild(fragment,node)})}
+
+window.deleteMaskedVariable=function(maskId){const maskedVar=state.currentMaskedVariables.find(m=>m.id===maskId);document.querySelectorAll(`.masked-token[data-mask-id="${maskId}"]`).forEach(token=>{const text=document.createTextNode(maskedVar?.actualValue||token.textContent);if(token.parentNode)token.parentNode.replaceChild(text,token)});state.currentMaskedVariables=state.currentMaskedVariables.filter(m=>m.id!==maskId);renderSidebar();showToast('Mask removed')};window.createFolder=async function(){const name=await customPrompt('Enter folder name:');if(!name)return;state.folders.push({id:'folder_'+Date.now(),name:name,createdAt:Date.now()});await persistState();renderTemplateList();showToast(`Folder "${name}" created`)};window.deleteFolder=async function(id,e){if(e)e.stopPropagation();const confirmed=await customConfirm('Delete folder? Templates will be uncategorized.');if(!confirmed)return;state.folders=state.folders.filter(f=>f.id!==id);state.templates.forEach(t=>{if(t.folderId===id)delete t.folderId});await persistState();renderTemplateList();showToast('Folder deleted')};window.moveTemplate=async function(templateId,e){if(e)e.stopPropagation();const folderNames=state.folders.map(f=>f.name).join(' | ');const input=await customPrompt(`Enter folder name (${folderNames}) or leave empty for none:`);if(input===null)return;const template=state.templates.find(t=>t.id===templateId);if(!template)return;if(input.trim()===''){delete template.folderId}else{let folder=state.folders.find(f=>f.name.toLowerCase()===input.toLowerCase());if(!folder){folder={id:'folder_'+Date.now(),name:input,createdAt:Date.now()};state.folders.push(folder)}template.folderId=folder.id}await persistState();renderTemplateList();showToast('Template moved')};function createVariable(selectedText){const varId='var_'+Date.now()+'_'+Math.floor(Math.random()*1000);safeGlobalReplace(selectedText,varId);state.currentVariables.push({id:varId,label:selectedText,value:selectedText});renderSidebar();updateActionButtons('')}function safeGlobalReplace(searchText,varId){if(!editor)return;const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT,null,false);const nodesToReplace=[];while(walker.nextNode()){const node=walker.currentNode;if(node.nodeValue.includes(searchText)){let parent=node.parentElement,isInToken=false;while(parent&&parent!==editor){if(parent.classList?.contains('token')||parent.classList?.contains('choice-token')||parent.classList?.contains('masked-token')){isInToken=true;break}parent=parent.parentElement}if(!isInToken)nodesToReplace.push(node)}}nodesToReplace.forEach(node=>{const fragment=document.createDocumentFragment();node.nodeValue.split(searchText).forEach((part,i)=>{fragment.appendChild(document.createTextNode(part));if(i<node.nodeValue.split(searchText).length-1){const span=document.createElement('span');span.className='token';span.dataset.id=varId;span.textContent=searchText;fragment.appendChild(span)}});if(node.parentNode)node.parentNode.replaceChild(fragment,node)})}function renderSidebar(){if(!varContainer)return;varContainer.innerHTML='';if(state.currentMaskedVariables.length>0){const maskedSection=document.createElement('div');maskedSection.className='masked-section';maskedSection.innerHTML=`<div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><span class="text-xs font-bold text-red-600 uppercase dark:text-red-400">Private Fields</span></div><span class="text-xs text-red-400">${state.currentMaskedVariables.length} masked</span></div><p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tap to copy hidden values. Values never shown on screen.</p>`;state.currentMaskedVariables.forEach(m=>{const div=document.createElement('div');div.className='masked-item';div.innerHTML=`<svg class="lock-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><span class="label" title="${m.label}">[${m.label}]</span><button onclick="copyMaskedValueFromSidebar('${m.id}',this)" class="copy-btn">Copy</button><button onclick="deleteMaskedVariable('${m.id}')" class="text-xs text-red-400 hover:text-red-600 touch-btn p-1 ml-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>`;maskedSection.appendChild(div)});varContainer.appendChild(maskedSection)}if(state.currentVariables.length>0){const varSection=document.createElement('div');varSection.innerHTML='<div class="text-xs font-bold text-emerald-600 uppercase mb-2 dark:text-emerald-400">Variables</div>';state.currentVariables.forEach(v=>{const div=document.createElement('div');div.className='bg-white p-3 rounded shadow-sm border border-gray-200 mb-2 dark:bg-slate-800 dark:border-slate-700';div.innerHTML=`<div class="flex justify-between items-center mb-1"><label class="text-xs font-bold text-gray-500 uppercase truncate dark:text-gray-400" title="${v.label}">${v.label}</label><button onclick="deleteVariable('${v.id}')" class="text-xs text-red-400 hover:text-red-600 touch-btn p-1">Unlink</button></div><input type="text" value="${escapeHtml(v.value)}" oninput="updateVariable('${v.id}',this.value)" class="w-full bg-emerald-50 border border-emerald-200 text-gray-800 text-sm rounded px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200" placeholder="Replacement...">`;varSection.appendChild(div)});varContainer.appendChild(varSection)}if(state.currentChoices.length>0){const choiceSection=document.createElement('div');choiceSection.innerHTML='<div class="text-xs font-bold text-amber-600 uppercase mb-2 mt-4 dark:text-amber-400">Choices</div>';state.currentChoices.forEach(c=>{const div=document.createElement('div');div.className='bg-amber-50 p-3 rounded shadow-sm border border-amber-200 mb-2 dark:bg-amber-900/30 dark:border-amber-800';div.innerHTML=`<div class="flex justify-between items-center mb-1"><label class="text-xs font-bold text-amber-700 uppercase truncate dark:text-amber-400" title="${c.original}">${c.original}</label><button onclick="deleteChoice('${c.id}')" class="text-xs text-red-400 hover:text-red-600 touch-btn p-1">Unlink</button></div><div class="flex flex-wrap gap-1 mt-1">${c.options.map(opt=>`<span class="text-xs px-2 py-1 rounded ${opt===c.selected?'bg-amber-500 text-white':'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300'}">${escapeHtml(opt)}</span>`).join('')}</div>`;choiceSection.appendChild(div)});varContainer.appendChild(choiceSection)}if(state.currentVariables.length===0&&state.currentChoices.length===0&&state.currentMaskedVariables.length===0){varContainer.innerHTML='<div class="text-center mt-12 text-gray-400 dark:text-gray-500"><svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg><p class="text-sm">Highlight text to create</p><p class="text-xs mt-1">Variables, Choices, or Privacy Masks</p></div>'}}window.updateVariable=function(id,newValue){document.querySelectorAll(`.token[data-id="${id}"]`).forEach(t=>t.textContent=newValue);const v=state.currentVariables.find(x=>x.id===id);if(v)v.value=newValue};window.deleteVariable=function(id){document.querySelectorAll(`.token[data-id="${id}"]`).forEach(t=>{if(t.parentNode)t.parentNode.replaceChild(document.createTextNode(t.textContent),t)});state.currentVariables=state.currentVariables.filter(x=>x.id!==id);renderSidebar()};window.deleteChoice=function(id){const choice=state.currentChoices.find(c=>c.id===id);document.querySelectorAll(`.choice-token[data-id="${id}"]`).forEach(t=>{if(t.parentNode)t.parentNode.replaceChild(document.createTextNode(choice?.original||t.textContent),t)});state.currentChoices=state.currentChoices.filter(c=>c.id!==id);renderSidebar();showToast('Choice removed')};window.saveCurrentTemplate=async function(){let name=state.templates.find(t=>t.id===state.currentTemplateId)?.name||"New Template";name=await customPrompt("Template Name:",name);if(!name)return;const template={id:state.currentTemplateId||Date.now().toString(),name:name,html:editor?editor.innerHTML:'',variables:state.currentVariables,choices:state.currentChoices,maskedVariables:state.currentMaskedVariables,hashtags:state.currentHashtags,folderId:state.templates.find(t=>t.id===state.currentTemplateId)?.folderId,updatedAt:Date.now()};const existingIndex=state.templates.findIndex(t=>t.id===template.id);if(existingIndex>=0)state.templates[existingIndex]=template;else state.templates.push(template);state.currentTemplateId=template.id;await persistState();renderTemplateList();showToast("Saved!");if(window.innerWidth<768)toggleSidebar()};window.createNew=async function(){if((state.currentVariables.length>0||state.currentChoices.length>0||state.currentMaskedVariables.length>0)){const confirmed=await customConfirm("Discard current changes?");if(!confirmed)return}state.currentTemplateId=null;state.currentVariables=[];state.currentChoices=[];state.currentMaskedVariables=[];state.currentHashtags=[];if(editor)editor.innerHTML='';renderSidebar();renderHashtags();renderTemplateList();showToast("New template started")};
+
+// Issue 3 Fix: Modified loadTemplateUI to re-attach event listeners
+window.loadTemplateUI = function(id) {
+    const template = state.templates.find(t => t.id === id);
+    if (!template) return;
+    
+    state.currentTemplateId = id;
+    state.currentVariables = template.variables ? [...template.variables] : [];
+    state.currentChoices = template.choices ? [...template.choices] : [];
+    state.currentMaskedVariables = template.maskedVariables ? [...template.maskedVariables] : [];
+    state.currentHashtags = template.hashtags ? [...template.hashtags] : [];
+    
+    if (editor) {
+        editor.innerHTML = template.html || '';
+        
+        // CRITICAL FIX: Re-attach event listeners after DOM restoration
+        reattachChoiceTokenListeners();
+        reattachMaskedTokenListeners();
+    }
+    
+    renderSidebar();
+    renderHashtags();
+    renderTemplateList();
+};
+
+window.removeTemplate=async function(id,e){if(e)e.stopPropagation();const confirmed=await customConfirm("Delete this template?");if(!confirmed)return;state.templates=state.templates.filter(t=>t.id!==id);await persistState();if(state.currentTemplateId===id)createNew();else renderTemplateList()};function renderTemplateList(){if(!templateList)return;templateList.innerHTML='';const foldersWithTemplates=state.folders.filter(f=>state.templates.some(t=>t.folderId===f.id));if(foldersWithTemplates.length>0)document.getElementById('closeAllFoldersContainer')?.classList.remove('hidden');else document.getElementById('closeAllFoldersContainer')?.classList.add('hidden');state.folders.forEach(folder=>{const folderTemplates=state.templates.filter(t=>t.folderId===folder.id);if(folderTemplates.length===0)return;const details=document.createElement('details');details.className="group mb-2";const summary=document.createElement('summary');summary.className="flex items-center justify-between text-xs font-bold text-gray-500 uppercase tracking-wider p-2 hover:bg-slate-100 rounded cursor-pointer select-none dark:text-gray-400 dark:hover:bg-slate-800";summary.innerHTML=`<div class="flex items-center gap-2"><svg class="arrow w-3 h-3 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg><span>${folder.name} <span class="text-gray-300 font-normal">(${folderTemplates.length})</span></span></div><button onclick="deleteFolder('${folder.id}',event)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>`;const listDiv=document.createElement('div');listDiv.className="pl-2 border-l border-slate-200 ml-3 mt-1 space-y-1 dark:border-slate-700";folderTemplates.forEach(t=>listDiv.appendChild(createTemplateItem(t)));details.appendChild(summary);details.appendChild(listDiv);templateList.appendChild(details)});const uncategorized=state.templates.filter(t=>!t.folderId);if(uncategorized.length>0){const div=document.createElement('div');div.innerHTML='<div class="px-2 py-1 mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider dark:text-gray-500">Uncategorized</div>';const listDiv=document.createElement('div');listDiv.className="space-y-1";uncategorized.forEach(t=>listDiv.appendChild(createTemplateItem(t)));div.appendChild(listDiv);templateList.appendChild(div)}if(state.templates.length===0)templateList.innerHTML='<div class="text-center mt-8 text-gray-400 dark:text-gray-500 p-4"><p class="text-sm mb-2">No templates yet</p><p class="text-xs opacity-75">Create your first template</p></div>'}function createTemplateItem(t){const isActive=state.currentTemplateId===t.id;const div=document.createElement('div');div.className=`group flex justify-between items-center p-2 rounded cursor-pointer transition select-none touch-btn ${isActive?'bg-indigo-100 text-indigo-900 border border-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:border-indigo-800':'hover:bg-slate-100 text-slate-600 dark:hover:bg-slate-800 dark:text-slate-300'}`;div.onclick=()=>{loadTemplateUI(t.id);if(window.innerWidth<768)toggleSidebar()};const varCount=t.variables?.length||0;const choiceCount=t.choices?.length||0;const maskedCount=t.maskedVariables?.length||0;let countsHtml='';if(varCount>0||choiceCount>0||maskedCount>0){countsHtml='<div class="flex gap-1 mt-1">';if(varCount>0)countsHtml+=`<span class="text-xs bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded dark:bg-emerald-900 dark:text-emerald-300">${varCount} var</span>`;if(choiceCount>0)countsHtml+=`<span class="text-xs bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded dark:bg-amber-900 dark:text-amber-300">${choiceCount} choice</span>`;if(maskedCount>0)countsHtml+=`<span class="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300" title="Privacy masked fields">🔒 ${maskedCount}</span>`;countsHtml+='</div>'}let hashtagsHtml='';if(t.hashtags&&t.hashtags.length>0){const displayTags=t.hashtags.slice(0,2);hashtagsHtml=`<div class="flex gap-1 mt-1">${displayTags.map(tag=>`<span class="text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300">#${tag}</span>`).join('')}${t.hashtags.length>2?`<span class="text-xs text-gray-400">+${t.hashtags.length-2}</span>`:''}</div>`}div.innerHTML=`<div class="flex-1 min-w-0"><span class="truncate text-sm font-medium block">${escapeHtml(t.name)}</span>${countsHtml}${hashtagsHtml}</div><div class="flex items-center gap-1 opacity-0 group-hover:opacity-100"><button onclick="moveTemplate('${t.id}',event)" class="text-gray-400 hover:text-indigo-600 p-1 touch-btn" title="Move to folder"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg></button><button onclick="removeTemplate('${t.id}',event)" class="text-gray-400 hover:text-red-500 p-1 touch-btn" title="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div>`;return div}function updateActionButtons(text){const varBtn=document.getElementById('makeVarBtn');const choiceBtn=document.getElementById('makeChoicesBtn');const privacyBtn=document.getElementById('applyPrivacyBtn');const mobileVarBtn=document.getElementById('mobileMakeVarBtn');const mobileChoiceBtn=document.getElementById('mobileMakeChoicesBtn');const mobilePrivacyBtn=document.getElementById('mobilePrivacyBtn');if(text&&text.trim()){[varBtn,choiceBtn,privacyBtn,mobileVarBtn,mobileChoiceBtn,mobilePrivacyBtn].forEach(btn=>btn?.classList.remove('hidden'))}else{[varBtn,choiceBtn,privacyBtn,mobileVarBtn,mobileChoiceBtn,mobilePrivacyBtn].forEach(btn=>btn?.classList.add('hidden'))}}window.copyFinalText=function(){if(!editor)return;const clone=editor.cloneNode(true);clone.querySelectorAll('.token').forEach(t=>{const id=t.dataset.id;const v=state.currentVariables.find(x=>x.id===id);t.replaceWith(document.createTextNode(v?v.value:t.textContent))});clone.querySelectorAll('.choice-token').forEach(t=>{const id=t.dataset.id;const c=state.currentChoices.find(x=>x.id===id);t.replaceWith(document.createTextNode(c?c.selected:t.textContent))});clone.querySelectorAll('.masked-token').forEach(t=>{const maskId=t.dataset.maskId;const m=state.currentMaskedVariables.find(x=>x.id===maskId);t.replaceWith(document.createTextNode(m?m.actualValue:t.textContent))});const text=clone.textContent||clone.innerText;navigator.clipboard.writeText(text).then(()=>showToast('Copied to clipboard!')).catch(()=>showToast('Copy failed'))};function handleImport(input){const file=input.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=async(e)=>{try{const data=JSON.parse(e.target.result);if(data.templates)state.templates=data.templates;if(data.folders)state.folders=data.folders;await persistState();renderTemplateList();if(state.templates.length>0)loadTemplateUI(state.templates[0].id);showToast('Imported successfully!')}catch(err){showToast('Import failed: Invalid JSON')}input.value=''};reader.readAsText(file)}window.exportData=function(){const data={templates:state.templates,folders:state.folders,exportedAt:new Date().toISOString(),version:APP_VERSION};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`typefill-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);showToast('Backup exported!')};const editor=document.getElementById('editor');const floater=document.getElementById('floater');if(editor){editor.addEventListener('mouseup',()=>{const text=window.getSelection().toString().trim();updateActionButtons(text)});editor.addEventListener('keyup',()=>{const text=window.getSelection().toString().trim();updateActionButtons(text)});editor.addEventListener('touchend',()=>{setTimeout(()=>{const text=window.getSelection().toString().trim();updateActionButtons(text)},100)})}if(floater&&editor){const rect=editor.getBoundingClientRect();floater.style.top=`${rect.top+10}px`;floater.style.left=`${rect.left+10}px`}if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js').then(reg=>{console.log('[TypeFill] SW registered:',reg.scope);reg.update()}).catch(err=>{console.log('[TypeFill] SW registration failed:',err)})}window.copyFinalText=function(){if(!editor)return;const clone=editor.cloneNode(true);clone.querySelectorAll('.token').forEach(t=>{const id=t.dataset.id;const v=state.currentVariables.find(x=>x.id===id);t.replaceWith(document.createTextNode(v?v.value:t.textContent))});clone.querySelectorAll('.choice-token').forEach(t=>{const id=t.dataset.id;const c=state.currentChoices.find(x=>x.id===id);t.replaceWith(document.createTextNode(c?c.selected:t.textContent))});clone.querySelectorAll('.masked-token').forEach(t=>{const maskId=t.dataset.maskId;const m=state.currentMaskedVariables.find(x=>x.id===maskId);t.replaceWith(document.createTextNode(m?m.actualValue:t.textContent))});const text=clone.textContent||clone.innerText;navigator.clipboard.writeText(text).then(()=>showToast('Copied to clipboard!')).catch(()=>showToast('Copy failed'))};
+    </script>
+</body>
+</html>
