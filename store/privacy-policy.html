@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Templateify Pro</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; }
+h1 { font-size: 28px; margin-bottom: 8px; }
+h2 { font-size: 20px; margin-top: 32px; margin-bottom: 8px; }
+.updated { color: #6b7280; font-size: 14px; margin-bottom: 32px; }
+p { margin: 12px 0; }
+ul { margin: 12px 0; padding-left: 24px; }
+li { margin: 6px 0; }
+.contact { background: #f3f4f6; border-radius: 8px; padding: 16px; margin-top: 32px; }
+code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>Privacy Policy</h1>
+<p class="updated">Last updated: July 10, 2026</p>
+
+<p>This Privacy Policy describes how Templateify Pro ("we", "us", or "the app") handles your information. By using the app, you agree to the practices described below.</p>
+
+<h2>1. The short version</h2>
+<p><strong>Templateify Pro is offline-first. We do not collect, transmit, or sell your personal data.</strong> Your templates, folders, fill-in values, and settings are stored locally on your device (in the browser's IndexedDB for the web version, or in the app's local storage for the Android/iOS version). We never see them.</p>
+
+<h2>2. What we collect</h2>
+<p><strong>Nothing.</strong> The app has no backend, no analytics, no crash reporting, and no tracking. There is no server that receives your data.</p>
+<p>The only data that leaves your device is:</p>
+<ul>
+<li><strong>Purchase receipts</strong> — when you buy the Pro unlock, the purchase is processed by Google Play Billing (Android) or Apple App Store (iOS). The purchase receipt stays between you, Google/Apple, and your device. We use it only to verify your Pro status; we do not transmit it anywhere else.</li>
+<li><strong>Ad requests</strong> (Free tier only) — when the AdMob banner ad is shown, Google AdMob may collect device identifiers and usage data to serve ads. This is governed by <a href="https://policies.google.com/technologies/partner-sites">Google's Privacy Policy</a>. <strong>Pro users see no ads and send no ad requests.</strong></li>
+</ul>
+
+<h2>3. What stays on your device</h2>
+<ul>
+<li>All templates (name, HTML content, blanks, options, private fields, hashtags)</li>
+<li>All folders and their nesting structure</li>
+<li>Fill-in values (ephemeral by default; saved per-template only if you enable "Remember my last values")</li>
+<li>Private field values (stored locally in IndexedDB; <strong>not encrypted at rest</strong> — see Section 5)</li>
+<li>Settings (theme, default export format, auto-save preference, onboarding completion)</li>
+<li>App diagnostics (only if you explicitly tap "Export diagnostics" in Settings — the file is downloaded to your device; we never receive it)</li>
+</ul>
+
+<h2>4. Third-party services</h2>
+<h3>4.1 Google AdMob (Free tier only)</h3>
+<p>Used to serve banner ads in the Free version. Google may collect device identifiers, coarse location, and usage data for ad personalization. You can opt out of personalized ads in your device's Google Settings. <strong>Pro users see no ads; no AdMob requests are made.</strong></p>
+<p>AdMob's data practices are governed by <a href="https://support.google.com/admob/answer/6128543">Google's AdMob Privacy Policy</a>.</p>
+
+<h3>4.2 Google Play Billing / Apple App Store (Pro unlock only)</h3>
+<p>Used to process the one-time Pro unlock purchase. Purchase verification is handled entirely by Google/Apple. We receive a cryptographic receipt that proves the purchase is valid; we do not receive your payment method, billing address, or account credentials.</p>
+
+<h3>4.3 CDN libraries (loaded once, cached offline)</h3>
+<p>The app loads the following libraries from <code>cdn.jsdelivr.net</code> on first launch (then caches them for offline use):</p>
+<ul>
+<li>Tailwind CSS (UI styling)</li>
+<li>pdf.js (PDF import)</li>
+<li>mammoth.js (DOCX import)</li>
+<li>marked (Markdown import)</li>
+<li>DOMPurify (HTML sanitization)</li>
+<li>Prism.js (Python syntax highlighting)</li>
+</ul>
+<p>jsDelivr may log anonymous request metadata (IP, user agent) per their <a href="https://www.jsdelivr.com/terms">terms</a>. No personally identifiable information is sent.</p>
+
+<h2>5. Security</h2>
+<p>Your data is stored locally and never transmitted to us. However, <strong>private field values are stored in plaintext in IndexedDB</strong>. Anyone with physical access to your device, or with the ability to inspect the browser's developer tools, can read them. Do not store high-secrets (e.g., banking passwords) in private fields. Use a dedicated password manager for those.</p>
+<p>A future version will add at-rest encryption for private fields (planned for Phase 3 / Cloud sync tier).</p>
+
+<h2>6. Children's privacy</h2>
+<p>The app is rated "Everyone" (Android) / "4+" (iOS). We do not knowingly collect any data from anyone, including children. AdMob is configured to serve only family-friendly ads.</p>
+
+<h2>7. Your rights</h2>
+<p>Because we collect no data, there is no data to access, correct, or delete on our servers. To delete all app data from your device:</p>
+<ul>
+<li><strong>Web</strong>: Open Settings → "Clear all data" (deletes all templates, folders, and settings from IndexedDB).</li>
+<li><strong>Android/iOS</strong>: Open Settings → "Clear all data", OR uninstall the app (which removes all local data).</li>
+</ul>
+
+<h2>8. Data retention</h2>
+<p>We retain nothing because we receive nothing. Your local data persists until you delete it (see Section 7) or uninstall the app.</p>
+
+<h2>9. Changes to this policy</h2>
+<p>If we add cloud sync (Phase 3 of the roadmap), this Privacy Policy will be updated to describe what data is synced, how it's encrypted, and how to delete it from the cloud. We will notify existing users via an in-app banner before any cloud feature is enabled.</p>
+
+<h2>10. Open-source acknowledgments</h2>
+<p>This app uses the following open-source libraries: Tailwind CSS (MIT), pdf.js (Apache 2.0), mammoth.js (BSD-2-Clause), marked (MIT), DOMPurify (MPL-2.0), Prism.js (MIT).</p>
+
+<div class="contact">
+<h2>Contact</h2>
+<p>If you have questions about this Privacy Policy, contact:</p>
+<p><strong>Email:</strong> support@templateify.com<br>
+<strong>Website:</strong> https://templateify.com</p>
+</div>
+</body>
+</html>
