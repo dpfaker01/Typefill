@@ -1,0 +1,37 @@
+{
+  "name": "templateify-pro",
+  "version": "7.1.0",
+  "description": "Templateify Pro — offline-first template manager. Capacitor wrapper for Android + iOS.",
+  "private": true,
+  "main": "index.html",
+  "scripts": {
+    "sync": "npx cap sync",
+    "add:android": "npx cap add android",
+    "add:ios": "npx cap add ios",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios",
+    "build:android": "npx cap copy android && npx cap sync android && npx cap open android",
+    "build:ios": "npx cap copy ios && npx cap sync ios && npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/share": "^6.0.0",
+    "@capacitor/preferences": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0",
+    "@capacitor-community/admob": "^6.0.0",
+    "@capacitor-community/in-app-purchases": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  },
+  "author": "Templateify",
+  "license": "UNLICENSED",
+  "capacitor": {
+    "config": "capacitor.config.json"
+  }
+}

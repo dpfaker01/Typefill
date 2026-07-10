@@ -1,0 +1,73 @@
+{
+  "appId": "com.templateify.pro",
+  "appName": "Templateify Pro",
+  "webDir": "../",
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "capacitor"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#ffffff"
+  },
+  "plugins": {
+    "AdMob": {
+      "appId": "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX",
+      "initializeForTesting": true
+    },
+    "InAppPurchase": {
+      "products": [
+        {
+          "id": "pro_unlock",
+          "type": "non_consumable",
+          "price": "$4.99 USD",
+          "title": "Templateify Pro Unlock",
+          "description": "Unlock all export formats, unlimited private fields, template lock, and remove ads. One-time purchase."
+        }
+      ]
+    },
+    "App": {
+      "shortcuts": [
+        {
+          "id": "new_template",
+          "title": "New Template",
+          "description": "Start a new blank template",
+          "icon": "ic_action_new"
+        },
+        {
+          "id": "search",
+          "title": "Search",
+          "description": "Search your templates",
+          "icon": "ic_action_search"
+        },
+        {
+          "id": "fill_recent",
+          "title": "Fill Recent",
+          "description": "Open your most recent template",
+          "icon": "ic_action_recent"
+        }
+      ]
+    },
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "launchAutoHide": true,
+      "backgroundColor": "#ffffff",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false,
+      "iosSpinnerStyle": "small",
+      "splashFullScreen": false,
+      "splashImmersive": false
+    },
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#4f46e5",
+      "overlaysWebView": false
+    }
+  }
+}
